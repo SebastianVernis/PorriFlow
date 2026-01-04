@@ -1,5 +1,5 @@
-// Auto-generated market data - 2026-01-04T21:51:46.740Z
-// Total symbols: 107
+// Auto-generated market data - 2026-01-04T22:25:55.789Z
+// Updated: 92/107 symbols
 
 export const MARKET_DATA = {
   "AAPL": {
@@ -8,7 +8,8 @@ export const MARKET_DATA = {
     "beta": 1.24,
     "yield": 0.5,
     "dgr": 7.5,
-    "price": 185.92
+    "price": 271.01,
+    "lastUpdate": "2026-01-04T22:23:59.066Z"
   },
   "MSFT": {
     "name": "Microsoft Corp.",
@@ -16,7 +17,8 @@ export const MARKET_DATA = {
     "beta": 0.89,
     "yield": 0.8,
     "dgr": 10.2,
-    "price": 376.04
+    "price": 472.94,
+    "lastUpdate": "2026-01-04T22:23:59.913Z"
   },
   "GOOGL": {
     "name": "Alphabet Inc.",
@@ -24,7 +26,8 @@ export const MARKET_DATA = {
     "beta": 1.05,
     "yield": 0,
     "dgr": 0,
-    "price": 140.23
+    "price": 315.15,
+    "lastUpdate": "2026-01-04T22:24:00.614Z"
   },
   "META": {
     "name": "Meta Platforms",
@@ -32,7 +35,8 @@ export const MARKET_DATA = {
     "beta": 1.18,
     "yield": 0,
     "dgr": 0,
-    "price": 356.89
+    "price": 650.41,
+    "lastUpdate": "2026-01-04T22:24:01.319Z"
   },
   "NVDA": {
     "name": "NVIDIA Corp.",
@@ -40,7 +44,8 @@ export const MARKET_DATA = {
     "beta": 1.68,
     "yield": 0.03,
     "dgr": 15.2,
-    "price": 495.22
+    "price": 188.85,
+    "lastUpdate": "2026-01-04T22:24:02.259Z"
   },
   "TSLA": {
     "name": "Tesla Inc.",
@@ -48,7 +53,8 @@ export const MARKET_DATA = {
     "beta": 2.01,
     "yield": 0,
     "dgr": 0,
-    "price": 248.48
+    "price": 438.07,
+    "lastUpdate": "2026-01-04T22:24:02.980Z"
   },
   "AMD": {
     "name": "Advanced Micro Devices",
@@ -56,7 +62,8 @@ export const MARKET_DATA = {
     "beta": 1.82,
     "yield": 0,
     "dgr": 0,
-    "price": 146.72
+    "price": 223.47,
+    "lastUpdate": "2026-01-04T22:24:03.806Z"
   },
   "INTC": {
     "name": "Intel Corp.",
@@ -64,7 +71,8 @@ export const MARKET_DATA = {
     "beta": 0.68,
     "yield": 1.5,
     "dgr": 2.8,
-    "price": 42.89
+    "price": 39.38,
+    "lastUpdate": "2026-01-04T22:24:04.838Z"
   },
   "CSCO": {
     "name": "Cisco Systems",
@@ -72,7 +80,8 @@ export const MARKET_DATA = {
     "beta": 0.92,
     "yield": 3,
     "dgr": 3.2,
-    "price": 51.34
+    "price": 76.04,
+    "lastUpdate": "2026-01-04T22:24:05.854Z"
   },
   "ORCL": {
     "name": "Oracle Corp.",
@@ -80,7 +89,8 @@ export const MARKET_DATA = {
     "beta": 0.88,
     "yield": 1.3,
     "dgr": 14.5,
-    "price": 107.23
+    "price": 195.71,
+    "lastUpdate": "2026-01-04T22:24:07.101Z"
   },
   "IBM": {
     "name": "IBM Corp.",
@@ -88,7 +98,8 @@ export const MARKET_DATA = {
     "beta": 0.72,
     "yield": 4.8,
     "dgr": 1.2,
-    "price": 165.78
+    "price": 291.5,
+    "lastUpdate": "2026-01-04T22:24:08.890Z"
   },
   "CRM": {
     "name": "Salesforce Inc.",
@@ -96,7 +107,8 @@ export const MARKET_DATA = {
     "beta": 1.15,
     "yield": 0,
     "dgr": 0,
-    "price": 262.45
+    "price": 253.62,
+    "lastUpdate": "2026-01-04T22:24:10.138Z"
   },
   "AVGO": {
     "name": "Broadcom Inc.",
@@ -104,7 +116,8 @@ export const MARKET_DATA = {
     "beta": 1.15,
     "yield": 1.4,
     "dgr": 18.5,
-    "price": 1234.56
+    "price": 347.62,
+    "lastUpdate": "2026-01-04T22:24:11.068Z"
   },
   "ADBE": {
     "name": "Adobe Inc.",
@@ -112,7 +125,8 @@ export const MARKET_DATA = {
     "beta": 1.22,
     "yield": 0,
     "dgr": 0,
-    "price": 567.89
+    "price": 333.3,
+    "lastUpdate": "2026-01-04T22:24:12.194Z"
   },
   "NFLX": {
     "name": "Netflix Inc.",
@@ -120,7 +134,8 @@ export const MARKET_DATA = {
     "beta": 1.35,
     "yield": 0,
     "dgr": 0,
-    "price": 489.23
+    "price": 90.99,
+    "lastUpdate": "2026-01-04T22:24:13.022Z"
   },
   "JNJ": {
     "name": "Johnson & Johnson",
@@ -128,7 +143,8 @@ export const MARKET_DATA = {
     "beta": 0.54,
     "yield": 3,
     "dgr": 5.8,
-    "price": 156.78
+    "price": 207.35,
+    "lastUpdate": "2026-01-04T22:24:14.248Z"
   },
   "ABBV": {
     "name": "AbbVie Inc.",
@@ -136,7 +152,8 @@ export const MARKET_DATA = {
     "beta": 0.58,
     "yield": 3.4,
     "dgr": 12.4,
-    "price": 167.45
+    "price": 229.31,
+    "lastUpdate": "2026-01-04T22:24:15.171Z"
   },
   "PFE": {
     "name": "Pfizer Inc.",
@@ -144,7 +161,8 @@ export const MARKET_DATA = {
     "beta": 0.62,
     "yield": 5.8,
     "dgr": 5.5,
-    "price": 28.92
+    "price": 25.18,
+    "lastUpdate": "2026-01-04T22:24:15.983Z"
   },
   "UNH": {
     "name": "UnitedHealth Group",
@@ -152,7 +170,8 @@ export const MARKET_DATA = {
     "beta": 0.75,
     "yield": 1.3,
     "dgr": 12.8,
-    "price": 512.34
+    "price": 336.4,
+    "lastUpdate": "2026-01-04T22:24:16.908Z"
   },
   "MRK": {
     "name": "Merck & Co.",
@@ -160,7 +179,8 @@ export const MARKET_DATA = {
     "beta": 0.48,
     "yield": 2.8,
     "dgr": 7.2,
-    "price": 102.67
+    "price": 106.45,
+    "lastUpdate": "2026-01-04T22:24:17.782Z"
   },
   "LLY": {
     "name": "Eli Lilly and Co.",
@@ -168,7 +188,8 @@ export const MARKET_DATA = {
     "beta": 0.52,
     "yield": 1.5,
     "dgr": 15.3,
-    "price": 589.23
+    "price": 1080.36,
+    "lastUpdate": "2026-01-04T22:24:18.864Z"
   },
   "BMY": {
     "name": "Bristol Myers Squibb",
@@ -176,7 +197,8 @@ export const MARKET_DATA = {
     "beta": 0.55,
     "yield": 4.5,
     "dgr": 2.5,
-    "price": 52.34
+    "price": 53.46,
+    "lastUpdate": "2026-01-04T22:24:19.677Z"
   },
   "AMGN": {
     "name": "Amgen Inc.",
@@ -184,7 +206,8 @@ export const MARKET_DATA = {
     "beta": 0.68,
     "yield": 3.2,
     "dgr": 10.2,
-    "price": 289.45
+    "price": 327.64,
+    "lastUpdate": "2026-01-04T22:24:20.411Z"
   },
   "JPM": {
     "name": "JPMorgan Chase",
@@ -192,7 +215,8 @@ export const MARKET_DATA = {
     "beta": 1.12,
     "yield": 2.4,
     "dgr": 8.5,
-    "price": 167.89
+    "price": 325.48,
+    "lastUpdate": "2026-01-04T22:24:21.183Z"
   },
   "BAC": {
     "name": "Bank of America",
@@ -200,7 +224,8 @@ export const MARKET_DATA = {
     "beta": 1.25,
     "yield": 2.8,
     "dgr": 7.2,
-    "price": 34.56
+    "price": 55.95,
+    "lastUpdate": "2026-01-04T22:24:21.929Z"
   },
   "WFC": {
     "name": "Wells Fargo",
@@ -208,7 +233,8 @@ export const MARKET_DATA = {
     "beta": 1.18,
     "yield": 2.6,
     "dgr": 6.5,
-    "price": 51.23
+    "price": 95.2,
+    "lastUpdate": "2026-01-04T22:24:22.692Z"
   },
   "GS": {
     "name": "Goldman Sachs",
@@ -216,7 +242,8 @@ export const MARKET_DATA = {
     "beta": 1.32,
     "yield": 2.3,
     "dgr": 9.8,
-    "price": 389.45
+    "price": 914.34,
+    "lastUpdate": "2026-01-04T22:24:23.381Z"
   },
   "MS": {
     "name": "Morgan Stanley",
@@ -224,7 +251,8 @@ export const MARKET_DATA = {
     "beta": 1.28,
     "yield": 3.1,
     "dgr": 8.2,
-    "price": 97.56
+    "price": 181.9,
+    "lastUpdate": "2026-01-04T22:24:24.282Z"
   },
   "V": {
     "name": "Visa Inc.",
@@ -232,7 +260,8 @@ export const MARKET_DATA = {
     "beta": 0.95,
     "yield": 0.7,
     "dgr": 17.5,
-    "price": 267.34
+    "price": 346.48,
+    "lastUpdate": "2026-01-04T22:24:25.823Z"
   },
   "MA": {
     "name": "Mastercard Inc.",
@@ -240,7 +269,8 @@ export const MARKET_DATA = {
     "beta": 1.02,
     "yield": 0.5,
     "dgr": 18.2,
-    "price": 423.45
+    "price": 563.13,
+    "lastUpdate": "2026-01-04T22:24:27.087Z"
   },
   "PYPL": {
     "name": "PayPal Holdings",
@@ -248,7 +278,8 @@ export const MARKET_DATA = {
     "beta": 1.42,
     "yield": 0,
     "dgr": 0,
-    "price": 62.34
+    "price": 58.14,
+    "lastUpdate": "2026-01-04T22:24:28.484Z"
   },
   "AMZN": {
     "name": "Amazon.com Inc.",
@@ -256,7 +287,8 @@ export const MARKET_DATA = {
     "beta": 1.15,
     "yield": 0,
     "dgr": 0,
-    "price": 151.94
+    "price": 226.5,
+    "lastUpdate": "2026-01-04T22:24:30.011Z"
   },
   "WMT": {
     "name": "Walmart Inc.",
@@ -264,7 +296,8 @@ export const MARKET_DATA = {
     "beta": 0.51,
     "yield": 1.5,
     "dgr": 9.2,
-    "price": 167.23
+    "price": 112.76,
+    "lastUpdate": "2026-01-04T22:24:32.573Z"
   },
   "HD": {
     "name": "Home Depot",
@@ -272,7 +305,8 @@ export const MARKET_DATA = {
     "beta": 0.98,
     "yield": 2.3,
     "dgr": 11.5,
-    "price": 345.67
+    "price": 345.82,
+    "lastUpdate": "2026-01-04T22:24:33.413Z"
   },
   "COST": {
     "name": "Costco Wholesale",
@@ -280,7 +314,8 @@ export const MARKET_DATA = {
     "beta": 0.68,
     "yield": 0.6,
     "dgr": 13.5,
-    "price": 678.9
+    "price": 854.5,
+    "lastUpdate": "2026-01-04T22:24:34.084Z"
   },
   "PG": {
     "name": "Procter & Gamble",
@@ -288,7 +323,8 @@ export const MARKET_DATA = {
     "beta": 0.45,
     "yield": 2.5,
     "dgr": 5.5,
-    "price": 153.45
+    "price": 141.79,
+    "lastUpdate": "2026-01-04T22:24:35.334Z"
   },
   "KO": {
     "name": "Coca-Cola Company",
@@ -296,7 +332,8 @@ export const MARKET_DATA = {
     "beta": 0.59,
     "yield": 3.1,
     "dgr": 4,
-    "price": 60.23
+    "price": 69.12,
+    "lastUpdate": "2026-01-04T22:24:36.071Z"
   },
   "PEP": {
     "name": "PepsiCo Inc.",
@@ -304,7 +341,8 @@ export const MARKET_DATA = {
     "beta": 0.52,
     "yield": 2.9,
     "dgr": 7.2,
-    "price": 168.9
+    "price": 142.23,
+    "lastUpdate": "2026-01-04T22:24:37.081Z"
   },
   "MCD": {
     "name": "McDonald's Corp.",
@@ -312,7 +350,8 @@ export const MARKET_DATA = {
     "beta": 0.63,
     "yield": 2.2,
     "dgr": 7.8,
-    "price": 289.34
+    "price": 303.26,
+    "lastUpdate": "2026-01-04T22:24:38.421Z"
   },
   "NKE": {
     "name": "Nike Inc.",
@@ -320,7 +359,8 @@ export const MARKET_DATA = {
     "beta": 1.02,
     "yield": 1.4,
     "dgr": 11.5,
-    "price": 103.56
+    "price": 63.28,
+    "lastUpdate": "2026-01-04T22:24:39.560Z"
   },
   "SBUX": {
     "name": "Starbucks Corp.",
@@ -328,7 +368,8 @@ export const MARKET_DATA = {
     "beta": 0.82,
     "yield": 2.1,
     "dgr": 12.2,
-    "price": 95.67
+    "price": 83.97,
+    "lastUpdate": "2026-01-04T22:24:40.248Z"
   },
   "XOM": {
     "name": "Exxon Mobil",
@@ -336,7 +377,8 @@ export const MARKET_DATA = {
     "beta": 1.02,
     "yield": 3.6,
     "dgr": 3.8,
-    "price": 102.34
+    "price": 122.65,
+    "lastUpdate": "2026-01-04T22:24:41.492Z"
   },
   "CVX": {
     "name": "Chevron Corp.",
@@ -344,7 +386,8 @@ export const MARKET_DATA = {
     "beta": 0.95,
     "yield": 3.4,
     "dgr": 6.2,
-    "price": 145.67
+    "price": 155.9,
+    "lastUpdate": "2026-01-04T22:24:44.104Z"
   },
   "COP": {
     "name": "ConocoPhillips",
@@ -352,7 +395,8 @@ export const MARKET_DATA = {
     "beta": 1.15,
     "yield": 2.8,
     "dgr": 8.5,
-    "price": 112.45
+    "price": 96.7,
+    "lastUpdate": "2026-01-04T22:24:45.066Z"
   },
   "SLB": {
     "name": "Schlumberger",
@@ -360,7 +404,8 @@ export const MARKET_DATA = {
     "beta": 1.42,
     "yield": 2.4,
     "dgr": 5.2,
-    "price": 48.9
+    "price": 40.2,
+    "lastUpdate": "2026-01-04T22:24:45.881Z"
   },
   "BA": {
     "name": "Boeing Company",
@@ -368,7 +413,8 @@ export const MARKET_DATA = {
     "beta": 1.35,
     "yield": 0,
     "dgr": 0,
-    "price": 178.23
+    "price": 227.77,
+    "lastUpdate": "2026-01-04T22:24:46.604Z"
   },
   "CAT": {
     "name": "Caterpillar Inc.",
@@ -376,7 +422,8 @@ export const MARKET_DATA = {
     "beta": 1.18,
     "yield": 2.1,
     "dgr": 6.5,
-    "price": 287.45
+    "price": 598.41,
+    "lastUpdate": "2026-01-04T22:24:48.165Z"
   },
   "GE": {
     "name": "General Electric",
@@ -384,7 +431,8 @@ export const MARKET_DATA = {
     "beta": 1.08,
     "yield": 0.8,
     "dgr": 4.2,
-    "price": 134.56
+    "price": 320.75,
+    "lastUpdate": "2026-01-04T22:24:49.275Z"
   },
   "MMM": {
     "name": "3M Company",
@@ -392,7 +440,8 @@ export const MARKET_DATA = {
     "beta": 0.92,
     "yield": 5.8,
     "dgr": 1.5,
-    "price": 98.76
+    "price": 161.82,
+    "lastUpdate": "2026-01-04T22:24:50.082Z"
   },
   "HON": {
     "name": "Honeywell International",
@@ -400,7 +449,8 @@ export const MARKET_DATA = {
     "beta": 1.05,
     "yield": 2,
     "dgr": 6.8,
-    "price": 201.23
+    "price": 195.88,
+    "lastUpdate": "2026-01-04T22:24:51.698Z"
   },
   "NEE": {
     "name": "NextEra Energy",
@@ -408,7 +458,8 @@ export const MARKET_DATA = {
     "beta": 0.48,
     "yield": 2.8,
     "dgr": 10.5,
-    "price": 67.89
+    "price": 80.93,
+    "lastUpdate": "2026-01-04T22:24:52.574Z"
   },
   "DUK": {
     "name": "Duke Energy",
@@ -416,7 +467,8 @@ export const MARKET_DATA = {
     "beta": 0.35,
     "yield": 4.2,
     "dgr": 2.2,
-    "price": 98.45
+    "price": 117.44,
+    "lastUpdate": "2026-01-04T22:24:53.667Z"
   },
   "SO": {
     "name": "Southern Company",
@@ -424,7 +476,8 @@ export const MARKET_DATA = {
     "beta": 0.38,
     "yield": 3.8,
     "dgr": 3.5,
-    "price": 78.9
+    "price": 87.18,
+    "lastUpdate": "2026-01-04T22:24:54.482Z"
   },
   "D": {
     "name": "Dominion Energy",
@@ -432,7 +485,8 @@ export const MARKET_DATA = {
     "beta": 0.42,
     "yield": 5.1,
     "dgr": 2.8,
-    "price": 52.34
+    "price": 59.24,
+    "lastUpdate": "2026-01-04T22:24:55.312Z"
   },
   "AMT": {
     "name": "American Tower",
@@ -440,7 +494,8 @@ export const MARKET_DATA = {
     "beta": 0.58,
     "yield": 3.2,
     "dgr": 9.2,
-    "price": 198.76
+    "price": 174.8,
+    "lastUpdate": "2026-01-04T22:24:56.127Z"
   },
   "PLD": {
     "name": "Prologis Inc.",
@@ -448,7 +503,8 @@ export const MARKET_DATA = {
     "beta": 0.82,
     "yield": 3.1,
     "dgr": 8.5,
-    "price": 123.45
+    "price": 129.05,
+    "lastUpdate": "2026-01-04T22:24:56.844Z"
   },
   "O": {
     "name": "Realty Income",
@@ -456,7 +512,8 @@ export const MARKET_DATA = {
     "beta": 0.82,
     "yield": 5.5,
     "dgr": 3.5,
-    "price": 56.78
+    "price": 57.31,
+    "lastUpdate": "2026-01-04T22:24:57.661Z"
   },
   "SPG": {
     "name": "Simon Property Group",
@@ -464,7 +521,8 @@ export const MARKET_DATA = {
     "beta": 1.15,
     "yield": 5.2,
     "dgr": 2.8,
-    "price": 145.23
+    "price": 183.97,
+    "lastUpdate": "2026-01-04T22:24:58.377Z"
   },
   "T": {
     "name": "AT&T Inc.",
@@ -472,7 +530,8 @@ export const MARKET_DATA = {
     "beta": 0.68,
     "yield": 7.2,
     "dgr": -0.5,
-    "price": 20.45
+    "price": 24.56,
+    "lastUpdate": "2026-01-04T22:24:59.196Z"
   },
   "VZ": {
     "name": "Verizon Communications",
@@ -480,7 +539,8 @@ export const MARKET_DATA = {
     "beta": 0.42,
     "yield": 6.5,
     "dgr": 2.1,
-    "price": 41.23
+    "price": 40.52,
+    "lastUpdate": "2026-01-04T22:24:59.910Z"
   },
   "TMUS": {
     "name": "T-Mobile US",
@@ -488,7 +548,8 @@ export const MARKET_DATA = {
     "beta": 0.58,
     "yield": 1.8,
     "dgr": 0,
-    "price": 167.89
+    "price": 199.58,
+    "lastUpdate": "2026-01-04T22:25:00.732Z"
   },
   "LIN": {
     "name": "Linde plc",
@@ -496,7 +557,8 @@ export const MARKET_DATA = {
     "beta": 0.88,
     "yield": 1.4,
     "dgr": 8.5,
-    "price": 412.34
+    "price": 429.11,
+    "lastUpdate": "2026-01-04T22:25:02.330Z"
   },
   "APD": {
     "name": "Air Products & Chemicals",
@@ -504,7 +566,8 @@ export const MARKET_DATA = {
     "beta": 0.82,
     "yield": 2.3,
     "dgr": 9.2,
-    "price": 278.9
+    "price": 250.47,
+    "lastUpdate": "2026-01-04T22:25:03.076Z"
   },
   "^GSPC": {
     "name": "S&P 500",
@@ -512,8 +575,9 @@ export const MARKET_DATA = {
     "beta": 1,
     "yield": 1.5,
     "dgr": 0,
-    "price": 4783.45,
-    "isIndex": true
+    "price": 6858.47,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:04.491Z"
   },
   "^DJI": {
     "name": "Dow Jones Industrial",
@@ -521,8 +585,9 @@ export const MARKET_DATA = {
     "beta": 1,
     "yield": 2,
     "dgr": 0,
-    "price": 37440.34,
-    "isIndex": true
+    "price": 48382.39,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:05.262Z"
   },
   "^IXIC": {
     "name": "NASDAQ Composite",
@@ -530,8 +595,9 @@ export const MARKET_DATA = {
     "beta": 1.15,
     "yield": 0.8,
     "dgr": 0,
-    "price": 15043.97,
-    "isIndex": true
+    "price": 23235.629,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:06.011Z"
   },
   "^RUT": {
     "name": "Russell 2000",
@@ -539,8 +605,9 @@ export const MARKET_DATA = {
     "beta": 1.25,
     "yield": 1.3,
     "dgr": 0,
-    "price": 2027.07,
-    "isIndex": true
+    "price": 2508.223,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:06.778Z"
   },
   "^VIX": {
     "name": "Volatility Index",
@@ -548,8 +615,9 @@ export const MARKET_DATA = {
     "beta": -0.5,
     "yield": 0,
     "dgr": 0,
-    "price": 13.54,
-    "isIndex": true
+    "price": 14.51,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:07.711Z"
   },
   "^FTSE": {
     "name": "FTSE 100",
@@ -557,8 +625,9 @@ export const MARKET_DATA = {
     "beta": 0.85,
     "yield": 3.5,
     "dgr": 0,
-    "price": 7733.12,
-    "isIndex": true
+    "price": 9951.14,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:09.339Z"
   },
   "^GDAXI": {
     "name": "DAX",
@@ -566,8 +635,9 @@ export const MARKET_DATA = {
     "beta": 1.1,
     "yield": 2.8,
     "dgr": 0,
-    "price": 16751.64,
-    "isIndex": true
+    "price": 24539.34,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:09.998Z"
   },
   "^N225": {
     "name": "Nikkei 225",
@@ -575,8 +645,9 @@ export const MARKET_DATA = {
     "beta": 0.95,
     "yield": 1.8,
     "dgr": 0,
-    "price": 33464.17,
-    "isIndex": true
+    "price": 50339.48,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:10.691Z"
   },
   "BTC-USD": {
     "name": "Bitcoin",
@@ -584,8 +655,9 @@ export const MARKET_DATA = {
     "beta": 2.5,
     "yield": 0,
     "dgr": 0,
-    "price": 44328.5,
-    "isCrypto": true
+    "price": 91197,
+    "isCrypto": true,
+    "lastUpdate": "2026-01-04T22:25:13.372Z"
   },
   "ETH-USD": {
     "name": "Ethereum",
@@ -593,8 +665,9 @@ export const MARKET_DATA = {
     "beta": 2.8,
     "yield": 0,
     "dgr": 0,
-    "price": 2328.75,
-    "isCrypto": true
+    "price": 3140.31,
+    "isCrypto": true,
+    "lastUpdate": "2026-01-04T22:25:15.717Z"
   },
   "BNB-USD": {
     "name": "Binance Coin",
@@ -602,8 +675,9 @@ export const MARKET_DATA = {
     "beta": 3.2,
     "yield": 0,
     "dgr": 0,
-    "price": 315.42,
-    "isCrypto": true
+    "price": 893.08,
+    "isCrypto": true,
+    "lastUpdate": "2026-01-04T22:25:17.895Z"
   },
   "XRP-USD": {
     "name": "Ripple",
@@ -611,8 +685,9 @@ export const MARKET_DATA = {
     "beta": 3.4,
     "yield": 0,
     "dgr": 0,
-    "price": 0.58,
-    "isCrypto": true
+    "price": 2.09,
+    "isCrypto": true,
+    "lastUpdate": "2026-01-04T22:25:20.147Z"
   },
   "ADA-USD": {
     "name": "Cardano",
@@ -620,8 +695,9 @@ export const MARKET_DATA = {
     "beta": 3.5,
     "yield": 0,
     "dgr": 0,
-    "price": 0.48,
-    "isCrypto": true
+    "price": 0.399309,
+    "isCrypto": true,
+    "lastUpdate": "2026-01-04T22:25:22.523Z"
   },
   "SOL-USD": {
     "name": "Solana",
@@ -692,8 +768,9 @@ export const MARKET_DATA = {
     "beta": 1,
     "yield": 1.5,
     "dgr": 0,
-    "price": 478.56,
-    "isETF": true
+    "price": 683.17,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:39.336Z"
   },
   "QQQ": {
     "name": "Invesco QQQ Trust",
@@ -701,8 +778,9 @@ export const MARKET_DATA = {
     "beta": 1.15,
     "yield": 0.6,
     "dgr": 0,
-    "price": 410.23,
-    "isETF": true
+    "price": 613.12,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:40.029Z"
   },
   "DIA": {
     "name": "SPDR Dow Jones ETF",
@@ -710,8 +788,9 @@ export const MARKET_DATA = {
     "beta": 1,
     "yield": 2,
     "dgr": 0,
-    "price": 374.89,
-    "isETF": true
+    "price": 483.63,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:40.771Z"
   },
   "IWM": {
     "name": "iShares Russell 2000",
@@ -719,8 +798,9 @@ export const MARKET_DATA = {
     "beta": 1.25,
     "yield": 1.3,
     "dgr": 0,
-    "price": 202.34,
-    "isETF": true
+    "price": 248.78,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:41.792Z"
   },
   "VTI": {
     "name": "Vanguard Total Stock",
@@ -728,8 +808,9 @@ export const MARKET_DATA = {
     "beta": 1,
     "yield": 1.4,
     "dgr": 0,
-    "price": 234.56,
-    "isETF": true
+    "price": 336.31,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:42.416Z"
   },
   "VOO": {
     "name": "Vanguard S&P 500",
@@ -737,8 +818,9 @@ export const MARKET_DATA = {
     "beta": 1,
     "yield": 1.5,
     "dgr": 0,
-    "price": 438.9,
-    "isETF": true
+    "price": 628.3,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:43.025Z"
   },
   "GLD": {
     "name": "SPDR Gold Trust",
@@ -746,8 +828,9 @@ export const MARKET_DATA = {
     "beta": 0.1,
     "yield": 0,
     "dgr": 0,
-    "price": 189.67,
-    "isETF": true
+    "price": 398.28,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:43.677Z"
   },
   "SLV": {
     "name": "iShares Silver Trust",
@@ -755,8 +838,9 @@ export const MARKET_DATA = {
     "beta": 0.3,
     "yield": 0,
     "dgr": 0,
-    "price": 21.89,
-    "isETF": true
+    "price": 65.75,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:44.385Z"
   },
   "USO": {
     "name": "US Oil Fund",
@@ -764,8 +848,9 @@ export const MARKET_DATA = {
     "beta": 1.8,
     "yield": 0,
     "dgr": 0,
-    "price": 71.23,
-    "isETF": true
+    "price": 68.96,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:45.031Z"
   },
   "TLT": {
     "name": "iShares 20Y Treasury",
@@ -773,8 +858,9 @@ export const MARKET_DATA = {
     "beta": -0.3,
     "yield": 4.5,
     "dgr": 0,
-    "price": 93.45,
-    "isETF": true
+    "price": 87.03,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:45.738Z"
   },
   "ARKK": {
     "name": "ARK Innovation ETF",
@@ -782,8 +868,9 @@ export const MARKET_DATA = {
     "beta": 1.8,
     "yield": 0,
     "dgr": 0,
-    "price": 48.9,
-    "isETF": true
+    "price": 78.31,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:46.399Z"
   },
   "GC=F": {
     "name": "Gold Futures",
@@ -863,8 +950,9 @@ export const MARKET_DATA = {
     "beta": 0.3,
     "yield": 0,
     "dgr": 0,
-    "price": 1.0912,
-    "isForex": true
+    "price": 1.1725,
+    "isForex": true,
+    "lastUpdate": "2026-01-04T22:25:53.194Z"
   },
   "GBPUSD=X": {
     "name": "GBP/USD",
@@ -872,8 +960,9 @@ export const MARKET_DATA = {
     "beta": 0.4,
     "yield": 0,
     "dgr": 0,
-    "price": 1.2734,
-    "isForex": true
+    "price": 1.3459,
+    "isForex": true,
+    "lastUpdate": "2026-01-04T22:25:53.824Z"
   },
   "USDJPY=X": {
     "name": "USD/JPY",
@@ -881,8 +970,9 @@ export const MARKET_DATA = {
     "beta": 0.3,
     "yield": 0,
     "dgr": 0,
-    "price": 144.52,
-    "isForex": true
+    "price": 156.757,
+    "isForex": true,
+    "lastUpdate": "2026-01-04T22:25:54.518Z"
   },
   "AUDUSD=X": {
     "name": "AUD/USD",
@@ -890,8 +980,9 @@ export const MARKET_DATA = {
     "beta": 0.5,
     "yield": 0,
     "dgr": 0,
-    "price": 0.6789,
-    "isForex": true
+    "price": 0.6691,
+    "isForex": true,
+    "lastUpdate": "2026-01-04T22:25:55.164Z"
   },
   "USDCAD=X": {
     "name": "USD/CAD",
@@ -899,13 +990,14 @@ export const MARKET_DATA = {
     "beta": 0.3,
     "yield": 0,
     "dgr": 0,
-    "price": 1.3423,
-    "isForex": true
+    "price": 1.3736,
+    "isForex": true,
+    "lastUpdate": "2026-01-04T22:25:55.788Z"
   }
 };
 
 export const METADATA = {
-  "generated": "2026-01-04T21:51:46.739Z",
+  "generated": "2026-01-04T22:25:55.788Z",
   "source": "Multiple public sources",
   "disclaimer": "Datos informativos. Verificar antes de operar.",
   "version": "3.0",
@@ -917,5 +1009,7 @@ export const METADATA = {
     "etfs": 11,
     "futures": 8,
     "forex": 5
-  }
+  },
+  "lastPriceUpdate": "2026-01-04T22:25:55.788Z",
+  "updatedSymbols": 92
 };
