@@ -1,0 +1,136 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Model
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String   // Hashed with bcrypt
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  portfolios Portfolio[]
+  settings   UserSettings?
+  
+  @@map("users")
+}
+
+// User Settings
+model UserSettings {
+  id                String  @id @default(cuid())
+  userId            String  @unique
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Financial Settings
+  riskFreeRate      Float   @default(4.5)
+  marketVolatility  Float   @default(15.0)
+  annualTarget      Float   @default(20.0)
+  refreshInterval   Int     @default(5)
+  currency          String  @default("USD")
+  
+  // API Keys (encrypted in production)
+  marketstackKey    String?
+  alphaVantageKey   String?
+  blackboxKey       String?
+  marketauxKey      String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("user_settings")
+}
+
+// Portfolio Model
+model Portfolio {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name        String
+  description String?
+  isDefault   Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  positions   Position[]
+  
+  @@index([userId])
+  @@map("portfolios")
+}
+
+// Position Model
+model Position {
+  id          String   @id @default(cuid())
+  portfolioId String
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  
+  // Asset Info
+  ticker      String
+  name        String?
+  sector      String?
+  isCrypto    Boolean  @default(false)
+  
+  // Position Data
+  shares      Float
+  avgCost     Float
+  currentPrice Float   @default(0)
+  
+  // Metrics
+  beta        Float    @default(1.0)
+  dgr         Float    @default(0.0)
+  dividendYield Float  @default(0.0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([portfolioId])
+  @@index([ticker])
+  @@map("positions")
+}
+
+// Price Cache Model (optional - for performance)
+model PriceCache {
+  id          String   @id @default(cuid())
+  ticker      String   @unique
+  price       Float
+  bid         Float?
+  ask         Float?
+  timestamp   DateTime @default(now())
+  source      String   @default("marketstack") // marketstack, alphavantage, etc
+  
+  updatedAt   DateTime @updatedAt
+  
+  @@map("price_cache")
+}
+
+// Historical Data Cache
+model HistoricalData {
+  id          String   @id @default(cuid())
+  ticker      String
+  date        DateTime
+  open        Float
+  high        Float
+  low         Float
+  close       Float
+  volume      Float?
+  
+  createdAt   DateTime @default(now())
+  
+  @@unique([ticker, date])
+  @@index([ticker])
+  @@map("historical_data")
+}

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de Deploy - SV Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-900 text-white p-8">
+    
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold mb-2">🔍 Verificación de Deploy</h1>
+        <p class="text-slate-400 mb-8">Verifica que tu deployment esté funcionando correctamente</p>
+
+        <!-- URLs Config -->
+        <div class="bg-slate-800 p-6 rounded-xl mb-6">
+            <h2 class="text-xl font-bold mb-4">🌐 URLs de Producción</h2>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm mb-1">Backend API URL:</label>
+                    <input type="text" id="backend-url" 
+                        placeholder="https://sv-portfolio-api.onrender.com"
+                        class="w-full bg-slate-700 p-3 rounded-lg text-white font-mono text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">Frontend URL (Vercel):</label>
+                    <input type="text" id="frontend-url" 
+                        placeholder="https://sv-portfolio.vercel.app"
+                        class="w-full bg-slate-700 p-3 rounded-lg text-white font-mono text-sm">
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Sections -->
+        <div class="space-y-4">
+            
+            <!-- Backend Tests -->
+            <div class="bg-slate-800 p-6 rounded-xl">
+                <h3 class="text-lg font-bold mb-4">🖥️ Backend (Render)</h3>
+                <div class="space-y-2">
+                    <button onclick="testBackendHealth()" class="w-full bg-indigo-600 hover:bg-indigo-700 p-3 rounded-lg font-bold transition-all">
+                        1. Test Health Endpoint
+                    </button>
+                    <button onclick="testBackendLogin()" class="w-full bg-purple-600 hover:bg-purple-700 p-3 rounded-lg font-bold transition-all">
+                        2. Test Login (demo user)
+                    </button>
+                    <button onclick="testBackendPortfolios()" class="w-full bg-emerald-600 hover:bg-emerald-700 p-3 rounded-lg font-bold transition-all">
+                        3. Test Get Portfolios
+                    </button>
+                </div>
+                <div id="backend-results" class="mt-4 p-4 bg-slate-900 rounded-lg font-mono text-xs overflow-auto max-h-64">
+                    <p class="text-slate-400">Los resultados aparecerán aquí...</p>
+                </div>
+            </div>
+
+            <!-- Frontend Tests -->
+            <div class="bg-slate-800 p-6 rounded-xl">
+                <h3 class="text-lg font-bold mb-4">🌐 Frontend (Vercel)</h3>
+                <div class="space-y-2">
+                    <button onclick="testFrontendAccess()" class="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded-lg font-bold transition-all">
+                        1. Test Frontend Access
+                    </button>
+                    <button onclick="testFrontendAssets()" class="w-full bg-cyan-600 hover:bg-cyan-700 p-3 rounded-lg font-bold transition-all">
+                        2. Test Assets Loading
+                    </button>
+                </div>
+                <div id="frontend-results" class="mt-4 p-4 bg-slate-900 rounded-lg font-mono text-xs overflow-auto max-h-64">
+                    <p class="text-slate-400">Los resultados aparecerán aquí...</p>
+                </div>
+            </div>
+
+            <!-- Database Tests -->
+            <div class="bg-slate-800 p-6 rounded-xl">
+                <h3 class="text-lg font-bold mb-4">🗄️ Database (Neon)</h3>
+                <div class="space-y-2">
+                    <button onclick="testDatabaseConnection()" class="w-full bg-amber-600 hover:bg-amber-700 p-3 rounded-lg font-bold transition-all">
+                        1. Test DB Connection (via API)
+                    </button>
+                    <a href="https://console.neon.tech" target="_blank" 
+                        class="block w-full bg-slate-700 hover:bg-slate-600 p-3 rounded-lg font-bold text-center transition-all">
+                        2. Abrir Neon Console →
+                    </a>
+                </div>
+                <div id="database-results" class="mt-4 p-4 bg-slate-900 rounded-lg font-mono text-xs overflow-auto max-h-64">
+                    <p class="text-slate-400">Los resultados aparecerán aquí...</p>
+                </div>
+            </div>
+
+            <!-- CORS Test -->
+            <div class="bg-slate-800 p-6 rounded-xl">
+                <h3 class="text-lg font-bold mb-4">🔐 CORS Configuration</h3>
+                <button onclick="testCORS()" class="w-full bg-rose-600 hover:bg-rose-700 p-3 rounded-lg font-bold transition-all">
+                    Test CORS from Frontend
+                </button>
+                <div id="cors-results" class="mt-4 p-4 bg-slate-900 rounded-lg font-mono text-xs overflow-auto max-h-64">
+                    <p class="text-slate-400">Los resultados aparecerán aquí...</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Summary -->
+        <div id="summary" class="mt-8 p-6 bg-slate-800 rounded-xl hidden">
+            <h3 class="text-xl font-bold mb-4">📊 Resumen de Verificación</h3>
+            <div id="summary-content" class="space-y-2">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let testResults = {
+            backendHealth: false,
+            backendLogin: false,
+            backendPortfolios: false,
+            frontendAccess: false,
+            cors: false
+        };
+
+        let savedToken = null;
+
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const color = type === 'success' ? 'text-emerald-400' : 
+                         type === 'error' ? 'text-rose-400' : 
+                         type === 'warning' ? 'text-amber-400' : 'text-slate-300';
+            
+            const line = document.createElement('p');
+            line.className = color;
+            line.textContent = message;
+            container.appendChild(line);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearLog(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        async function testBackendHealth() {
+            clearLog('backend-results');
+            const url = document.getElementById('backend-url').value || 'https://sv-portfolio-api.onrender.com';
+            
+            log('backend-results', `🔍 Testing: ${url}/health`, 'info');
+            
+            try {
+                const response = await fetch(`${url}/health`);
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'ok') {
+                    log('backend-results', '✅ Backend está funcionando correctamente', 'success');
+                    log('backend-results', `Version: ${data.version}`, 'success');
+                    log('backend-results', `Timestamp: ${data.timestamp}`, 'info');
+                    testResults.backendHealth = true;
+                } else {
+                    throw new Error('Health check failed');
+                }
+            } catch (error) {
+                log('backend-results', `❌ Error: ${error.message}`, 'error');
+                log('backend-results', '⚠️ Verifica que el backend esté deployado en Render', 'warning');
+                testResults.backendHealth = false;
+            }
+            
+            updateSummary();
+        }
+
+        async function testBackendLogin() {
+            clearLog('backend-results');
+            const url = document.getElementById('backend-url').value || 'https://sv-portfolio-api.onrender.com';
+            
+            log('backend-results', `🔍 Testing login con usuario demo...`, 'info');
+            
+            try {
+                const response = await fetch(`${url}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: 'demo',
+                        password: 'demo123456'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    log('backend-results', '✅ Login exitoso', 'success');
+                    log('backend-results', `User: ${data.user.username} (${data.user.email})`, 'success');
+                    log('backend-results', `Token: ${data.token.substring(0, 30)}...`, 'info');
+                    savedToken = data.token;
+                    testResults.backendLogin = true;
+                } else {
+                    throw new Error(data.error || 'Login failed');
+                }
+            } catch (error) {
+                log('backend-results', `❌ Error: ${error.message}`, 'error');
+                log('backend-results', '⚠️ Verifica que db:seed se haya ejecutado', 'warning');
+                testResults.backendLogin = false;
+            }
+            
+            updateSummary();
+        }
+
+        async function testBackendPortfolios() {
+            clearLog('backend-results');
+            
+            if (!savedToken) {
+                log('backend-results', '⚠️ Ejecuta primero el test de login', 'warning');
+                return;
+            }
+            
+            const url = document.getElementById('backend-url').value || 'https://sv-portfolio-api.onrender.com';
+            log('backend-results', `🔍 Testing get portfolios...`, 'info');
+            
+            try {
+                const response = await fetch(`${url}/api/portfolios`, {
+                    headers: {
+                        'Authorization': `Bearer ${savedToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.portfolios) {
+                    log('backend-results', `✅ Portfolios obtenidos: ${data.portfolios.length}`, 'success');
+                    data.portfolios.forEach((pf, i) => {
+                        log('backend-results', `  ${i+1}. ${pf.name} - ${pf.positions.length} posiciones`, 'info');
+                    });
+                    testResults.backendPortfolios = true;
+                } else {
+                    throw new Error(data.error || 'Failed to get portfolios');
+                }
+            } catch (error) {
+                log('backend-results', `❌ Error: ${error.message}`, 'error');
+                testResults.backendPortfolios = false;
+            }
+            
+            updateSummary();
+        }
+
+        async function testFrontendAccess() {
+            clearLog('frontend-results');
+            const url = document.getElementById('frontend-url').value || 'https://sv-portfolio.vercel.app';
+            
+            log('frontend-results', `🔍 Testing: ${url}`, 'info');
+            
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                
+                if (response.ok) {
+                    log('frontend-results', '✅ Frontend accesible', 'success');
+                    log('frontend-results', `Status: ${response.status}`, 'success');
+                    log('frontend-results', `HTTPS: ${url.startsWith('https') ? 'Sí ✓' : 'No ✗'}`, 'info');
+                    testResults.frontendAccess = true;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log('frontend-results', `❌ Error: ${error.message}`, 'error');
+                log('frontend-results', '⚠️ Verifica que el deploy en Vercel esté completo', 'warning');
+                testResults.frontendAccess = false;
+            }
+            
+            updateSummary();
+        }
+
+        async function testFrontendAssets() {
+            clearLog('frontend-results');
+            const url = document.getElementById('frontend-url').value || 'https://sv-portfolio.vercel.app';
+            
+            log('frontend-results', `🔍 Testing assets...`, 'info');
+            
+            const assets = [
+                '/login.html',
+                '/opi-unified.html',
+                '/assets/js/auth.js'
+            ];
+            
+            for (const asset of assets) {
+                try {
+                    const response = await fetch(`${url}${asset}`, { method: 'HEAD' });
+                    if (response.ok) {
+                        log('frontend-results', `✅ ${asset}`, 'success');
+                    } else {
+                        log('frontend-results', `⚠️ ${asset} - ${response.status}`, 'warning');
+                    }
+                } catch (error) {
+                    log('frontend-results', `❌ ${asset} - ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function testDatabaseConnection() {
+            clearLog('database-results');
+            
+            if (!savedToken) {
+                log('database-results', '⚠️ Ejecuta primero el test de login para obtener token', 'warning');
+                return;
+            }
+            
+            const url = document.getElementById('backend-url').value || 'https://sv-portfolio-api.onrender.com';
+            log('database-results', `🔍 Testing DB connection via API...`, 'info');
+            
+            try {
+                // Get portfolios requires DB connection
+                const response = await fetch(`${url}/api/portfolios`, {
+                    headers: { 'Authorization': `Bearer ${savedToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('database-results', '✅ Database conectada correctamente', 'success');
+                    log('database-results', `Portfolios en DB: ${data.portfolios.length}`, 'success');
+                    log('database-results', 'Ir a Neon Console para ver datos:', 'info');
+                    log('database-results', 'https://console.neon.tech', 'info');
+                } else {
+                    throw new Error(data.error || 'DB connection failed');
+                }
+            } catch (error) {
+                log('database-results', `❌ Error: ${error.message}`, 'error');
+                log('database-results', '⚠️ Verifica DATABASE_URL en Render', 'warning');
+            }
+        }
+
+        async function testCORS() {
+            clearLog('cors-results');
+            const backendUrl = document.getElementById('backend-url').value || 'https://sv-portfolio-api.onrender.com';
+            const frontendUrl = document.getElementById('frontend-url').value || 'https://sv-portfolio.vercel.app';
+            
+            log('cors-results', `🔍 Testing CORS configuration...`, 'info');
+            log('cors-results', `Backend: ${backendUrl}`, 'info');
+            log('cors-results', `Frontend: ${frontendUrl}`, 'info');
+            
+            try {
+                const response = await fetch(`${backendUrl}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Origin': frontendUrl
+                    }
+                });
+                
+                const corsHeader = response.headers.get('Access-Control-Allow-Origin');
+                
+                if (corsHeader) {
+                    log('cors-results', `✅ CORS configurado: ${corsHeader}`, 'success');
+                    testResults.cors = true;
+                    
+                    if (corsHeader === '*') {
+                        log('cors-results', '⚠️ CORS abierto (*) - OK para desarrollo', 'warning');
+                    } else if (corsHeader === frontendUrl) {
+                        log('cors-results', '✅ CORS restringido correctamente', 'success');
+                    }
+                } else {
+                    log('cors-results', '⚠️ No CORS header encontrado', 'warning');
+                    log('cors-results', 'Verifica ALLOWED_ORIGINS en Render', 'warning');
+                    testResults.cors = false;
+                }
+            } catch (error) {
+                log('cors-results', `❌ Error: ${error.message}`, 'error');
+                testResults.cors = false;
+            }
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summary = document.getElementById('summary');
+            const content = document.getElementById('summary-content');
+            
+            const total = Object.keys(testResults).length;
+            const passed = Object.values(testResults).filter(v => v).length;
+            const percentage = Math.round((passed / total) * 100);
+            
+            content.innerHTML = `
+                <div class="flex items-center justify-between p-4 bg-slate-900 rounded-lg">
+                    <div>
+                        <p class="text-2xl font-bold">${passed} / ${total} Tests Pasados</p>
+                        <p class="text-sm text-slate-400">${percentage}% Completado</p>
+                    </div>
+                    <div class="text-6xl">
+                        ${percentage === 100 ? '🎉' : percentage > 50 ? '⚠️' : '❌'}
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    ${Object.entries(testResults).map(([key, passed]) => `
+                        <div class="p-3 rounded-lg ${passed ? 'bg-emerald-900/50 border border-emerald-500' : 'bg-slate-900 border border-slate-700'}">
+                            <p class="text-xs text-slate-400">${key}</p>
+                            <p class="text-sm font-bold ${passed ? 'text-emerald-400' : 'text-slate-500'}">
+                                ${passed ? '✅ Pasado' : '⏸️ Pendiente'}
+                            </p>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                ${percentage === 100 ? `
+                    <div class="mt-4 p-4 bg-emerald-900/30 border border-emerald-500 rounded-lg">
+                        <p class="text-lg font-bold text-emerald-400">🎉 ¡Deploy Exitoso!</p>
+                        <p class="text-sm text-slate-300 mt-2">Tu aplicación está lista para usar en producción</p>
+                        <a href="${document.getElementById('frontend-url').value || 'https://sv-portfolio.vercel.app'}" 
+                            target="_blank"
+                            class="inline-block mt-3 bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-emerald-700">
+                            Abrir Dashboard →
+                        </a>
+                    </div>
+                ` : `
+                    <div class="mt-4 p-4 bg-amber-900/30 border border-amber-500 rounded-lg">
+                        <p class="text-lg font-bold text-amber-400">⚠️ Algunos tests fallaron</p>
+                        <p class="text-sm text-slate-300 mt-2">Revisa los errores arriba y consulta DEPLOY.md</p>
+                    </div>
+                `}
+            `;
+            
+            summary.classList.remove('hidden');
+        }
+
+        // Auto-populate URLs from localStorage
+        window.onload = () => {
+            const savedBackend = localStorage.getItem('sv_api_url');
+            if (savedBackend) {
+                document.getElementById('backend-url').value = savedBackend;
+            }
+        };
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test APIs - SV Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">🔍 Test de APIs - SV Dashboard</h1>
+        
+        <div class="space-y-6">
+            <!-- Config -->
+            <div class="bg-slate-800 p-6 rounded-xl">
+                <h2 class="text-xl font-bold mb-4">⚙️ Configuración</h2>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm mb-1">Marketstack API Key:</label>
+                        <input type="text" id="marketstack-key" class="w-full bg-slate-700 p-2 rounded" placeholder="68b8070ec719075f3ea37d9069d4ea68">
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Alpha Vantage API Key:</label>
+                        <input type="text" id="alphavantage-key" class="w-full bg-slate-700 p-2 rounded" placeholder="CJIOJ9QSU8A2JM7R">
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Marketaux API Key (opcional):</label>
+                        <input type="text" id="marketaux-key" class="w-full bg-slate-700 p-2 rounded" placeholder="Dejar vacío para omitir">
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Ticker a probar:</label>
+                        <input type="text" id="test-ticker" class="w-full bg-slate-700 p-2 rounded" placeholder="AAPL" value="AAPL">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Buttons -->
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="testMarketstack()" class="bg-indigo-600 hover:bg-indigo-700 p-4 rounded-xl font-bold">
+                    Test Marketstack (Precios)
+                </button>
+                <button onclick="testAlphaVantage()" class="bg-purple-600 hover:bg-purple-700 p-4 rounded-xl font-bold">
+                    Test Alpha Vantage (Históricos)
+                </button>
+                <button onclick="testAlphaNews()" class="bg-emerald-600 hover:bg-emerald-700 p-4 rounded-xl font-bold">
+                    Test Alpha News (Sentimiento)
+                </button>
+                <button onclick="testMarketaux()" class="bg-amber-600 hover:bg-amber-700 p-4 rounded-xl font-bold">
+                    Test Marketaux (Noticias)
+                </button>
+            </div>
+
+            <!-- Results -->
+            <div class="bg-slate-800 p-6 rounded-xl">
+                <h2 class="text-xl font-bold mb-4">📊 Resultados</h2>
+                <div id="results" class="text-sm font-mono bg-slate-900 p-4 rounded overflow-auto max-h-96">
+                    <p class="text-slate-400">Los resultados aparecerán aquí...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const color = type === 'success' ? 'text-emerald-400' : 
+                         type === 'error' ? 'text-rose-400' : 
+                         type === 'warning' ? 'text-amber-400' : 'text-slate-300';
+            results.innerHTML += `<p class="${color}">${message}</p>`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function testMarketstack() {
+            clearLog();
+            const key = document.getElementById('marketstack-key').value;
+            const ticker = document.getElementById('test-ticker').value.toUpperCase();
+            
+            if (!key) {
+                log('❌ Por favor ingresa una API key de Marketstack', 'error');
+                return;
+            }
+
+            log(`🚀 Testeando Marketstack con ${ticker}...`, 'info');
+            
+            try {
+                const res = await fetch(
+                    `http://api.marketstack.com/v1/eod/latest?access_key=${key}&symbols=${ticker}&limit=1`
+                );
+                const data = await res.json();
+
+                if (data.error) {
+                    log(`❌ Error: ${data.error.message}`, 'error');
+                    return;
+                }
+
+                if (data.data && data.data.length > 0) {
+                    const quote = data.data[0];
+                    log('✅ Marketstack funciona correctamente!', 'success');
+                    log(`Symbol: ${quote.symbol}`, 'info');
+                    log(`Close: $${quote.close}`, 'info');
+                    log(`Date: ${quote.date}`, 'info');
+                    log(`Volume: ${quote.volume.toLocaleString()}`, 'info');
+                } else {
+                    log('⚠️ No se encontraron datos', 'warning');
+                }
+            } catch (err) {
+                log(`❌ Error de conexión: ${err.message}`, 'error');
+            }
+        }
+
+        async function testAlphaVantage() {
+            clearLog();
+            const key = document.getElementById('alphavantage-key').value;
+            const ticker = document.getElementById('test-ticker').value.toUpperCase();
+            
+            if (!key) {
+                log('❌ Por favor ingresa una API key de Alpha Vantage', 'error');
+                return;
+            }
+
+            log(`🚀 Testeando Alpha Vantage con ${ticker}...`, 'info');
+            
+            try {
+                const res = await fetch(
+                    `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${key}&outputsize=compact`
+                );
+                const data = await res.json();
+
+                if (data['Error Message']) {
+                    log(`❌ Error: ${data['Error Message']}`, 'error');
+                    return;
+                }
+
+                if (data['Time Series (Daily)']) {
+                    const timeSeries = data['Time Series (Daily)'];
+                    const dates = Object.keys(timeSeries).slice(0, 3);
+                    
+                    log('✅ Alpha Vantage funciona correctamente!', 'success');
+                    log(`Últimos 3 días:`, 'info');
+                    dates.forEach(date => {
+                        const close = timeSeries[date]['4. close'];
+                        log(`  ${date}: $${parseFloat(close).toFixed(2)}`, 'info');
+                    });
+                } else {
+                    log('⚠️ No se encontraron datos históricos', 'warning');
+                }
+            } catch (err) {
+                log(`❌ Error de conexión: ${err.message}`, 'error');
+            }
+        }
+
+        async function testAlphaNews() {
+            clearLog();
+            const key = document.getElementById('alphavantage-key').value;
+            const ticker = document.getElementById('test-ticker').value.toUpperCase();
+            
+            if (!key) {
+                log('❌ Por favor ingresa una API key de Alpha Vantage', 'error');
+                return;
+            }
+
+            log(`🚀 Testeando Alpha Vantage News con ${ticker}...`, 'info');
+            
+            try {
+                const res = await fetch(
+                    `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${key}&limit=3`
+                );
+                const data = await res.json();
+
+                if (data.feed && data.feed.length > 0) {
+                    log('✅ Alpha Vantage News funciona correctamente!', 'success');
+                    log(`Noticias recientes:`, 'info');
+                    data.feed.forEach((article, idx) => {
+                        const sentiment = article.ticker_sentiment?.find(t => t.ticker === ticker);
+                        const score = sentiment?.ticker_sentiment_score || 0;
+                        log(`\n${idx + 1}. ${article.title}`, 'info');
+                        log(`   Sentimiento: ${parseFloat(score).toFixed(2)}`, score > 0.15 ? 'success' : score < -0.15 ? 'error' : 'warning');
+                    });
+                } else {
+                    log('⚠️ No se encontraron noticias', 'warning');
+                }
+            } catch (err) {
+                log(`❌ Error de conexión: ${err.message}`, 'error');
+            }
+        }
+
+        async function testMarketaux() {
+            clearLog();
+            const key = document.getElementById('marketaux-key').value;
+            const ticker = document.getElementById('test-ticker').value.toUpperCase();
+            
+            if (!key) {
+                log('⚠️ Marketaux API key no configurada. Esto es opcional.', 'warning');
+                log('Obtén tu key en: https://www.marketaux.com/', 'info');
+                return;
+            }
+
+            log(`🚀 Testeando Marketaux con ${ticker}...`, 'info');
+            
+            try {
+                const res = await fetch(
+                    `https://api.marketaux.com/v1/news/all?symbols=${ticker}&filter_entities=true&language=en&api_token=${key}&limit=3`
+                );
+                const data = await res.json();
+
+                if (data.error) {
+                    log(`❌ Error: ${data.error}`, 'error');
+                    return;
+                }
+
+                if (data.data && data.data.length > 0) {
+                    log('✅ Marketaux funciona correctamente!', 'success');
+                    log(`Noticias recientes:`, 'info');
+                    data.data.forEach((article, idx) => {
+                        const entity = article.entities?.find(e => e.symbol === ticker);
+                        const sentiment = entity?.sentiment_score || 0;
+                        log(`\n${idx + 1}. ${article.title}`, 'info');
+                        log(`   Sentimiento: ${sentiment.toFixed(2)}`, sentiment > 0.15 ? 'success' : sentiment < -0.15 ? 'error' : 'warning');
+                    });
+                } else {
+                    log('⚠️ No se encontraron noticias', 'warning');
+                }
+            } catch (err) {
+                log(`❌ Error de conexión: ${err.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

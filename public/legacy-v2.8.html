@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SV Dividend Dashboard | Weekly Projection</title>
+    <!-- Tailwind CSS for modern UI (CDN usado para prototipado rápido) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Suprimir warning de Tailwind CDN en desarrollo
+        if (typeof console !== 'undefined') {
+            const originalWarn = console.warn;
+            console.warn = function(...args) {
+                if (args[0]?.includes('Tailwind CSS') || args[0]?.includes('cdn.tailwindcss.com')) {
+                    return; // Suprimir warning de Tailwind CDN
+                }
+                originalWarn.apply(console, args);
+            };
+        }
+    </script>
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .ai-pulse {
+            animation: pulse-indigo 2s infinite;
+        }
+        @keyframes pulse-indigo {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        
+        /* Popup Hover Chart */
+        .chart-popup {
+            position: fixed;
+            display: none;
+            z-index: 9999;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .chart-popup.active {
+            display: block;
+            animation: fadeInChart 0.3s ease;
+        }
+        @keyframes fadeInChart {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .ticker-hover {
+            cursor: pointer;
+            position: relative;
+        }
+    </style>
+</head>
+<body class="bg-[#f8fafc] text-slate-900 font-sans min-h-screen">
+
+    <!-- Header Navigation -->
+    <nav class="bg-slate-900 text-white p-4 sticky top-0 z-40 shadow-xl border-b border-indigo-500/30">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 p-2 rounded-xl ai-pulse">
+                    <i class="fa-solid fa-robot text-white"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight">SV <span class="text-indigo-400 font-light">Weekly Monitor</span></h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex flex-col items-end text-right mr-4 border-r border-slate-700 pr-4">
+                    <span id="update-timer" class="text-[10px] uppercase font-black text-indigo-300 tracking-widest">Next Refresh: 5:00</span>
+                    <span id="cache-status" class="text-[9px] text-slate-500 font-mono">Cargando precios...</span>
+                    <span id="api-source" class="text-[8px] text-indigo-400 font-mono mt-0.5">🚀 Marketstack API</span>
+                </div>
+                <button onclick="openAIPortfolioBuilder()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-lg shadow-purple-500/30 mr-2">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>AI Portfolio
+                </button>
+                <button onclick="toggleModal()" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-plus mr-2"></i>Simular
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 md:p-8">
+        
+        <!-- Summary Dashboard -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="glass-card p-5 rounded-3xl shadow-sm border-b-4 border-indigo-500">
+                <p class="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">Valor Portafolio</p>
+                <h2 id="total-value" class="text-2xl font-black text-slate-800">$0.00</h2>
+                <p id="total-gain-loss" class="text-xs font-bold mt-1 text-slate-400">Sincronizando...</p>
+            </div>
+            <div class="glass-card p-5 rounded-3xl shadow-sm border-b-4 border-emerald-500">
+                <p class="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">Meta 7 Días</p>
+                <h2 id="weekly-target" class="text-2xl font-black text-emerald-600">+$0.00</h2>
+                <p class="text-[10px] text-slate-400 mt-1 font-bold uppercase italic">Crecimiento: 0.35%</p>
+            </div>
+            <div class="glass-card p-5 rounded-3xl shadow-sm border-b-4 border-amber-400">
+                <p class="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">Elasticidad (Beta)</p>
+                <h2 id="portfolio-beta" class="text-2xl font-black text-slate-800">0.00</h2>
+                <p id="beta-status" class="text-[10px] text-slate-400 mt-1 font-bold">Risk Analysis</p>
+            </div>
+            <div class="glass-card p-5 rounded-3xl shadow-sm border-b-4 border-indigo-400">
+                <p class="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">Proyección 12M</p>
+                <h2 id="projection-return" class="text-2xl font-black text-indigo-700">20.0%+</h2>
+                <p class="text-[10px] text-slate-400 mt-1 font-bold">SV Strategy Goal</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Side: Table & Charts -->
+            <div class="lg:col-span-2 space-y-8">
+                
+                <!-- Weekly Projection Chart -->
+                <div class="glass-card p-6 rounded-3xl shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-black text-slate-700 uppercase text-xs tracking-tighter">Proyección de Crecimiento Semanal</h3>
+                        <div class="flex gap-2">
+                            <span class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black">Escenario Corto Plazo</span>
+                        </div>
+                    </div>
+                    <div class="relative h-64">
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Assets Table -->
+                <div class="glass-card rounded-3xl shadow-sm overflow-hidden border border-slate-100">
+                    <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-white/50">
+                        <h3 class="font-black text-slate-700 uppercase text-xs tracking-tighter">Posiciones y Análisis Semanal</h3>
+                        <div class="flex gap-2 items-center">
+                            <span id="live-indicator" class="w-2 h-2 rounded-full bg-slate-300"></span>
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Alpha Vantage Sync</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50/50 text-slate-400 text-[10px] uppercase font-black border-b border-slate-100">
+                                <tr>
+                                    <th class="p-4 text-left">Activo</th>
+                                    <th class="p-4 text-right">Cantidad</th>
+                                    <th class="p-4 text-right">Precio</th>
+                                    <th class="p-4 text-right">Valor</th>
+                                    <th class="p-4 text-center">Rend. %</th>
+                                    <th class="p-4 text-center">Beta</th>
+                                    <th class="p-4 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="portfolio-body" class="divide-y divide-slate-100">
+                                <!-- JS Injection -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Blackbox AI Strategy Panel -->
+            <div class="space-y-6">
+                <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group border border-indigo-500/20">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-600/10 rounded-full blur-3xl group-hover:bg-indigo-600/20 transition-all duration-1000"></div>
+                    
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                            <i class="fa-solid fa-bolt-lightning text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-black text-white uppercase text-xs tracking-widest">Forecast Semanal</h3>
+                            <p class="text-[9px] text-indigo-400 font-bold uppercase tracking-tighter">BlackboxAI Engine Pro</p>
+                        </div>
+                    </div>
+
+                    <div id="ai-insight-container" class="space-y-4">
+                        <div id="ai-loader" class="hidden py-10 flex flex-col items-center justify-center space-y-3">
+                            <div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-indigo-400">Consultando Blackbox API...</span>
+                        </div>
+                        <div id="ai-content" class="text-sm text-slate-300 leading-relaxed min-h-[150px]">
+                            Selecciona "Analizar" en un activo para proyectar su comportamiento en los próximos 7 días basándose en su elasticidad actual.
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-white/5">
+                        <button onclick="getGlobalForecast()" class="w-full bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-2xl border border-white/10 transition-all text-[10px] uppercase tracking-widest">
+                            Análisis Global Semanal
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-3xl shadow-sm">
+                    <h3 class="font-black text-slate-700 uppercase text-xs tracking-tighter mb-4">Diversificación Sectorial</h3>
+                    <div class="relative h-48">
+                        <canvas id="diversificationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- AI Portfolio Builder Modal -->
+    <div id="ai-portfolio-modal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="bg-gradient-to-br from-purple-900 to-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-4xl p-8 border border-purple-500/30 relative overflow-hidden">
+            <div class="absolute -right-20 -top-20 w-80 h-80 bg-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
+            
+            <div class="flex justify-between items-start mb-6 relative z-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/50">
+                        <i class="fa-solid fa-wand-magic-sparkles text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-3xl font-black text-white tracking-tight">AI Portfolio Builder</h3>
+                        <p class="text-sm text-purple-300 font-bold uppercase tracking-wider mt-1">Recomendación Inteligente de Inversión</p>
+                    </div>
+                </div>
+                <button onclick="closeAIPortfolioModal()" class="text-slate-400 hover:text-rose-400 transition-colors text-2xl">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </button>
+            </div>
+
+            <div id="ai-portfolio-form" class="relative z-10 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-black uppercase text-purple-300 mb-2">Capital de Inversión ($)</label>
+                        <input type="number" id="portfolio-capital" step="1000" value="10000" required class="w-full bg-slate-800/50 border border-purple-500/30 rounded-xl p-4 font-bold text-white outline-none focus:ring-2 focus:ring-purple-500/50 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black uppercase text-purple-300 mb-2">Perfil de Riesgo</label>
+                        <select id="portfolio-risk" class="w-full bg-slate-800/50 border border-purple-500/30 rounded-xl p-4 font-bold text-white outline-none focus:ring-2 focus:ring-purple-500/50 transition-all">
+                            <option value="conservative">Conservador (Beta < 0.7)</option>
+                            <option value="moderate" selected>Moderado (Beta 0.7-1.2)</option>
+                            <option value="aggressive">Agresivo (Beta > 1.2)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-black uppercase text-purple-300 mb-2">Objetivo de Inversión</label>
+                    <select id="portfolio-goal" class="w-full bg-slate-800/50 border border-purple-500/30 rounded-xl p-4 font-bold text-white outline-none focus:ring-2 focus:ring-purple-500/50 transition-all">
+                        <option value="dividend">Ingresos por Dividendos (Yield Alto)</option>
+                        <option value="growth" selected>Crecimiento de Capital (DGR Alto)</option>
+                        <option value="balanced">Balanceado (Dividendos + Crecimiento)</option>
+                    </select>
+                </div>
+
+                <button onclick="generateAIPortfolio()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-purple-500/30 uppercase tracking-widest text-sm">
+                    <i class="fa-solid fa-sparkles mr-2"></i>Generar Portafolio con IA
+                </button>
+            </div>
+
+            <div id="ai-portfolio-loader" class="hidden py-16 flex flex-col items-center justify-center space-y-4 relative z-10">
+                <div class="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-sm font-black uppercase tracking-widest text-purple-300">Analizando mercado con BlackboxAI...</span>
+                <p class="text-xs text-slate-400">Evaluando 70+ símbolos y optimizando diversificación</p>
+            </div>
+
+            <div id="ai-portfolio-result" class="hidden relative z-10 mt-6 space-y-4">
+                <div class="bg-slate-800/50 rounded-2xl p-6 border border-purple-500/20">
+                    <h4 class="text-lg font-black text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-purple-400"></i>
+                        Recomendación de Portafolio
+                    </h4>
+                    <div id="ai-portfolio-content" class="text-slate-200 text-sm leading-relaxed space-y-3 max-h-[40vh] overflow-y-auto custom-scroll">
+                        <!-- AI Response -->
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/50 rounded-2xl p-6 border border-purple-500/20">
+                    <h4 class="text-lg font-black text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-emerald-400"></i>
+                        Símbolos Recomendados
+                    </h4>
+                    <div id="ai-portfolio-symbols" class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <!-- Symbols will be injected -->
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="applyAIPortfolio()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg uppercase tracking-widest text-sm">
+                        <i class="fa-solid fa-check-circle mr-2"></i>Aplicar al Portafolio
+                    </button>
+                    <button onclick="closeAIPortfolioModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 rounded-2xl transition-all uppercase tracking-widest text-sm">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Analysis Modal -->
+    <div id="ai-modal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-3xl p-8 border border-indigo-500/30 relative overflow-hidden">
+            <div class="absolute -right-20 -top-20 w-60 h-60 bg-indigo-600/10 rounded-full blur-3xl"></div>
+            
+            <div class="flex justify-between items-start mb-6 relative z-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                        <i class="fa-solid fa-brain text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-black text-white tracking-tight">Análisis AI Enriquecido</h3>
+                        <p id="ai-modal-ticker" class="text-sm text-indigo-400 font-bold uppercase tracking-wider mt-1"></p>
+                        <p class="text-[9px] text-slate-500 mt-0.5">Con datos históricos, noticias y sentimiento del mercado</p>
+                    </div>
+                </div>
+                <button onclick="closeAIModal()" class="text-slate-400 hover:text-rose-400 transition-colors text-2xl">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </button>
+            </div>
+
+            <div id="ai-modal-loader" class="hidden py-16 flex flex-col items-center justify-center space-y-4 relative z-10">
+                <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-sm font-black uppercase tracking-widest text-indigo-400">Consultando BlackboxAI...</span>
+                <p class="text-xs text-slate-400">Recopilando datos históricos, noticias y sentimiento...</p>
+            </div>
+
+            <div id="ai-modal-content" class="relative z-10 bg-slate-800/50 rounded-2xl p-6 text-slate-200 leading-relaxed min-h-[200px] max-h-[60vh] overflow-y-auto custom-scroll">
+                <!-- Content injected by JS -->
+            </div>
+
+            <div class="mt-6 flex gap-3 relative z-10">
+                <button onclick="closeAIModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-2xl border border-slate-700 transition-all text-sm uppercase tracking-widest">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Popup Hover -->
+    <div id="chart-popup" class="chart-popup">
+        <div class="bg-slate-900 rounded-2xl shadow-2xl border border-indigo-500/30 p-4 w-[400px]">
+            <div class="flex justify-between items-center mb-3">
+                <div>
+                    <h4 id="popup-ticker" class="text-lg font-black text-white"></h4>
+                    <p id="popup-name" class="text-xs text-slate-400"></p>
+                </div>
+                <div id="popup-loader" class="hidden">
+                    <div class="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            </div>
+            <div class="relative h-[200px] bg-slate-800/50 rounded-xl p-2">
+                <canvas id="popup-chart"></canvas>
+            </div>
+            <div id="popup-stats" class="grid grid-cols-3 gap-2 mt-3 text-center">
+                <!-- Stats injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Simulation Modal -->
+    <div id="sim-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-8 border border-slate-100">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h3 class="text-2xl font-black text-slate-800 tracking-tighter">Simular Activo</h3>
+                    <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">Algoritmo de Proyección Semanal</p>
+                </div>
+                <button onclick="toggleModal()" class="text-slate-300 hover:text-rose-500 transition-colors text-2xl">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </button>
+            </div>
+            <form id="sim-form" class="space-y-6">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-indigo-600 mb-1 ml-1">Ticker (Símbolo)</label>
+                    <select id="sim-ticker" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 font-black uppercase text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                        <option value="">Selecciona un símbolo...</option>
+                    </select>
+                    <div id="ticker-price-info" class="mt-2 text-xs text-slate-500 font-bold hidden">
+                        <span id="ticker-current-price"></span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-indigo-600 mb-1 ml-1">Cantidad</label>
+                        <input type="number" id="sim-shares" step="0.01" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 font-black text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-indigo-600 mb-1 ml-1">Costo Promedio</label>
+                        <input type="number" id="sim-cost" step="0.01" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 font-black text-slate-800">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white font-black py-5 rounded-[1.5rem] hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-500/20 uppercase tracking-widest active:scale-95">
+                    Integrar al Monitor
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * SV DIVIDEND DASHBOARD v2.8 - AI ANALYSIS WITH MARKET NEWS & SENTIMENT
+         * Author: Sebastian Vernis Environment
+         * 
+         * Features:
+         * - Real-time prices with Marketstack API
+         * - Historical data with hover charts
+         * - AI analysis with news sentiment
+         * - Weekly projection tracking
+         * - Smart caching with fallback
+         */
+
+        // --- ESTRUCTURA DE API KEYS ---
+        const ALPHA_VANTAGE_KEY = "CJIOJ9QSU8A2JM7R"; 
+        const MARKETSTACK_API_KEY = "68b8070ec719075f3ea37d9069d4ea68";
+        const BLACKBOX_API_KEY = "sk-Vl6HBMkEaEzvj6x_qfrfhA";
+        const MARKETAUX_API_KEY = "Vdq2uhfqTxGlZniQXUdF48p9qoLP7dlmzNOvPTW9"; // Obtener en: https://www.marketaux.com/
+
+        let portfolio = JSON.parse(localStorage.getItem('sv_dividend_portfolio')) || [];
+        let timeLeft = 300;
+        let chartInstances = { weekly: null, diversification: null, popup: null };
+        let cachedPrices = JSON.parse(localStorage.getItem('sv_cached_prices')) || {};
+        let historicalDataCache = JSON.parse(localStorage.getItem('sv_historical_data')) || {};
+        let popupTimeout = null;
+
+        // Referencias de Activos SV (Optimizado para Baja Elasticidad)
+        const stockRef = {
+            // Tecnología & AI
+            "AVGO": { beta: 1.15, dgr: 18.5, yield: 1.4, sector: 'Tecnología/AI', name: 'Broadcom Inc.' },
+            "AAPL": { beta: 1.24, dgr: 7.5, yield: 0.5, sector: 'Tecnología', name: 'Apple Inc.' },
+            "MSFT": { beta: 0.89, dgr: 10.2, yield: 0.8, sector: 'Tecnología', name: 'Microsoft Corp.' },
+            "NVDA": { beta: 1.68, dgr: 15.2, yield: 0.03, sector: 'Tecnología/AI', name: 'NVIDIA Corp.' },
+            "GOOGL": { beta: 1.05, dgr: 0.0, yield: 0.0, sector: 'Tecnología', name: 'Alphabet Inc.' },
+            "META": { beta: 1.18, dgr: 0.0, yield: 0.0, sector: 'Tecnología', name: 'Meta Platforms Inc.' },
+            "TSLA": { beta: 2.01, dgr: 0.0, yield: 0.0, sector: 'Tecnología/Auto', name: 'Tesla Inc.' },
+            "AMD": { beta: 1.82, dgr: 0.0, yield: 0.0, sector: 'Tecnología', name: 'Advanced Micro Devices' },
+            "INTC": { beta: 0.68, dgr: 2.8, yield: 1.5, sector: 'Tecnología', name: 'Intel Corp.' },
+            "CSCO": { beta: 0.92, dgr: 3.2, yield: 3.0, sector: 'Tecnología', name: 'Cisco Systems Inc.' },
+            "ORCL": { beta: 0.88, dgr: 14.5, yield: 1.3, sector: 'Tecnología', name: 'Oracle Corp.' },
+            "IBM": { beta: 0.72, dgr: 1.2, yield: 4.8, sector: 'Tecnología', name: 'IBM Corp.' },
+            "CRM": { beta: 1.15, dgr: 0.0, yield: 0.0, sector: 'Tecnología', name: 'Salesforce Inc.' },
+            
+            // Salud & Farmacéuticas
+            "JNJ": { beta: 0.54, dgr: 5.8, yield: 3.0, sector: 'Salud', name: 'Johnson & Johnson' },
+            "ABBV": { beta: 0.58, dgr: 12.4, yield: 3.4, sector: 'Salud', name: 'AbbVie Inc.' },
+            "PFE": { beta: 0.62, dgr: 5.5, yield: 5.8, sector: 'Salud', name: 'Pfizer Inc.' },
+            "UNH": { beta: 0.75, dgr: 12.8, yield: 1.3, sector: 'Salud', name: 'UnitedHealth Group' },
+            "MRK": { beta: 0.48, dgr: 7.2, yield: 2.8, sector: 'Salud', name: 'Merck & Co.' },
+            "LLY": { beta: 0.52, dgr: 15.3, yield: 1.5, sector: 'Salud', name: 'Eli Lilly and Co.' },
+            "BMY": { beta: 0.55, dgr: 2.5, yield: 4.5, sector: 'Salud', name: 'Bristol Myers Squibb' },
+            "AMGN": { beta: 0.68, dgr: 10.2, yield: 3.2, sector: 'Salud', name: 'Amgen Inc.' },
+            
+            // Consumo & Retail
+            "PEP": { beta: 0.52, dgr: 7.2, yield: 2.9, sector: 'Consumo', name: 'PepsiCo Inc.' },
+            "KO": { beta: 0.59, dgr: 4.0, yield: 3.1, sector: 'Consumo', name: 'Coca-Cola Company' },
+            "PG": { beta: 0.45, dgr: 5.5, yield: 2.5, sector: 'Consumo', name: 'Procter & Gamble' },
+            "WMT": { beta: 0.51, dgr: 9.2, yield: 1.5, sector: 'Retail', name: 'Walmart Inc.' },
+            "COST": { beta: 0.68, dgr: 13.5, yield: 0.6, sector: 'Retail', name: 'Costco Wholesale' },
+            "MCD": { beta: 0.63, dgr: 7.8, yield: 2.2, sector: 'Consumo', name: 'McDonald\'s Corp.' },
+            "NKE": { beta: 1.02, dgr: 11.5, yield: 1.4, sector: 'Consumo', name: 'Nike Inc.' },
+            "SBUX": { beta: 0.82, dgr: 12.2, yield: 2.1, sector: 'Consumo', name: 'Starbucks Corp.' },
+            
+            // Finanzas & Bancos
+            "MAIN": { beta: 1.05, dgr: 4.2, yield: 6.8, sector: 'Finanzas', name: 'Main Street Capital' },
+            "JPM": { beta: 1.12, dgr: 8.5, yield: 2.4, sector: 'Finanzas', name: 'JPMorgan Chase & Co.' },
+            "BAC": { beta: 1.25, dgr: 7.2, yield: 2.8, sector: 'Finanzas', name: 'Bank of America' },
+            "WFC": { beta: 1.18, dgr: 6.5, yield: 2.6, sector: 'Finanzas', name: 'Wells Fargo & Co.' },
+            "GS": { beta: 1.32, dgr: 9.8, yield: 2.3, sector: 'Finanzas', name: 'Goldman Sachs Group' },
+            "MS": { beta: 1.28, dgr: 8.2, yield: 3.1, sector: 'Finanzas', name: 'Morgan Stanley' },
+            "V": { beta: 0.95, dgr: 17.5, yield: 0.7, sector: 'Finanzas', name: 'Visa Inc.' },
+            "MA": { beta: 1.02, dgr: 18.2, yield: 0.5, sector: 'Finanzas', name: 'Mastercard Inc.' },
+            
+            // Energía
+            "XOM": { beta: 1.02, dgr: 3.8, yield: 3.6, sector: 'Energía', name: 'Exxon Mobil Corp.' },
+            "CVX": { beta: 0.95, dgr: 6.2, yield: 3.4, sector: 'Energía', name: 'Chevron Corp.' },
+            "COP": { beta: 1.15, dgr: 8.5, yield: 2.8, sector: 'Energía', name: 'ConocoPhillips' },
+            "SLB": { beta: 1.42, dgr: 5.2, yield: 2.4, sector: 'Energía', name: 'Schlumberger Ltd.' },
+            
+            // Telecomunicaciones
+            "VZ": { beta: 0.42, dgr: 2.1, yield: 6.5, sector: 'Telecomunicaciones', name: 'Verizon Communications' },
+            "T": { beta: 0.68, dgr: -0.5, yield: 7.2, sector: 'Telecomunicaciones', name: 'AT&T Inc.' },
+            "TMUS": { beta: 0.58, dgr: 0.0, yield: 1.8, sector: 'Telecomunicaciones', name: 'T-Mobile US Inc.' },
+            
+            // REIT & Inmobiliario
+            "O": { beta: 0.82, dgr: 3.5, yield: 5.5, sector: 'REIT', name: 'Realty Income Corp.' },
+            "SPG": { beta: 1.15, dgr: 2.8, yield: 5.2, sector: 'REIT', name: 'Simon Property Group' },
+            "PSA": { beta: 0.68, dgr: 8.5, yield: 4.1, sector: 'REIT', name: 'Public Storage' },
+            "AMT": { beta: 0.58, dgr: 9.2, yield: 3.2, sector: 'REIT', name: 'American Tower Corp.' },
+            
+            // Industrial & Manufactura
+            "CAT": { beta: 1.18, dgr: 6.5, yield: 2.1, sector: 'Industrial', name: 'Caterpillar Inc.' },
+            "BA": { beta: 1.35, dgr: 0.0, yield: 0.0, sector: 'Industrial', name: 'Boeing Company' },
+            "GE": { beta: 1.08, dgr: 4.2, yield: 0.8, sector: 'Industrial', name: 'General Electric' },
+            "MMM": { beta: 0.92, dgr: 1.5, yield: 5.8, sector: 'Industrial', name: '3M Company' },
+            "HON": { beta: 1.05, dgr: 6.8, yield: 2.0, sector: 'Industrial', name: 'Honeywell International' },
+            
+            // Materiales & Químicos
+            "LIN": { beta: 0.88, dgr: 8.5, yield: 1.4, sector: 'Materiales', name: 'Linde plc' },
+            "APD": { beta: 0.82, dgr: 9.2, yield: 2.3, sector: 'Materiales', name: 'Air Products & Chemicals' },
+            
+            // Utilities
+            "NEE": { beta: 0.48, dgr: 10.5, yield: 2.8, sector: 'Utilities', name: 'NextEra Energy Inc.' },
+            "DUK": { beta: 0.35, dgr: 2.2, yield: 4.2, sector: 'Utilities', name: 'Duke Energy Corp.' },
+            "SO": { beta: 0.38, dgr: 3.5, yield: 3.8, sector: 'Utilities', name: 'Southern Company' }
+        };
+
+        window.onload = async () => {
+            updateCacheStatus();
+            populateTickerDropdown();
+            renderDashboard();
+            startTimer();
+            
+            // Cargar precios en background
+            preloadStockPrices().then(() => {
+                updateCacheStatus();
+                populateTickerDropdown(); // Actualizar dropdown con precios
+                if (portfolio.length > 0) updatePrices();
+            });
+        };
+
+        function updateCacheStatus() {
+            const statusEl = document.getElementById('cache-status');
+            if (!statusEl) return;
+            
+            const priceCount = cachedPrices.prices ? Object.keys(cachedPrices.prices).length : 0;
+            const totalSymbols = Object.keys(stockRef).length;
+            const percentage = Math.round((priceCount / totalSymbols) * 100);
+            
+            if (priceCount === 0) {
+                statusEl.textContent = 'Precios: Cargando...';
+                statusEl.className = 'text-[9px] text-amber-500 font-mono animate-pulse';
+            } else if (priceCount < totalSymbols) {
+                statusEl.textContent = `Precios: ${priceCount}/${totalSymbols} (${percentage}%)`;
+                statusEl.className = 'text-[9px] text-amber-400 font-mono';
+            } else {
+                statusEl.textContent = `Precios: ${priceCount}/${totalSymbols} ✓`;
+                statusEl.className = 'text-[9px] text-emerald-500 font-mono';
+            }
+        }
+
+        // --- PRECARGA DE PRECIOS CON MARKETSTACK ---
+        async function preloadStockPrices() {
+            const tickers = Object.keys(stockRef);
+            const now = Date.now();
+            const cacheExpiry = 15 * 60 * 1000; // 15 minutos para datos más frescos
+            
+            // Verificar si el cache es válido
+            if (cachedPrices.timestamp && (now - cachedPrices.timestamp) < cacheExpiry) {
+                console.log('Usando precios en caché (válidos por 15 min)');
+                return;
+            }
+
+            console.log('🚀 Precargando precios con Marketstack API...');
+            console.log(`Cargando ${tickers.length} símbolos en paralelo...`);
+            
+            // Preservar precios antiguos si existen
+            const newCache = { 
+                timestamp: now, 
+                prices: cachedPrices.prices || {} 
+            };
+            
+            // Marketstack permite múltiples símbolos en una llamada (hasta 100)
+            const batchSize = 50; // Cargar 50 símbolos por request
+            let successCount = 0;
+            let failCount = 0;
+            
+            for (let i = 0; i < tickers.length; i += batchSize) {
+                const batch = tickers.slice(i, i + batchSize);
+                const tickerString = batch.join(',');
+                
+                console.log(`📊 Lote ${Math.floor(i/batchSize) + 1}/${Math.ceil(tickers.length/batchSize)}: ${batch.length} símbolos`);
+                
+                try {
+                    // Marketstack endpoint para datos en tiempo real (latest)
+                    const res = await fetch(
+                        `http://api.marketstack.com/v1/eod/latest?access_key=${MARKETSTACK_API_KEY}&symbols=${tickerString}&limit=1`
+                    );
+                    const data = await res.json();
+                    
+                    if (data.error) {
+                        console.error(`❌ Error API Marketstack:`, data.error.message);
+                        failCount += batch.length;
+                        continue;
+                    }
+                    
+                    if (data.data && Array.isArray(data.data)) {
+                        data.data.forEach(quote => {
+                            const ticker = quote.symbol;
+                            const price = quote.close || quote.open; // Usar close o open si close no disponible
+                            
+                            if (price) {
+                                newCache.prices[ticker] = parseFloat(price);
+                                successCount++;
+                                console.log(`✓ ${ticker}: $${price.toFixed(2)}`);
+                            } else {
+                                failCount++;
+                                console.warn(`⚠️ ${ticker}: Sin precio disponible`);
+                            }
+                        });
+                    }
+                    
+                    // Guardar progreso después de cada lote
+                    cachedPrices = newCache;
+                    localStorage.setItem('sv_cached_prices', JSON.stringify(cachedPrices));
+                    updateCacheStatus();
+                    
+                    // Pequeña pausa entre lotes para evitar sobrecarga
+                    if (i + batchSize < tickers.length) {
+                        await new Promise(r => setTimeout(r, 1000)); // 1 segundo entre lotes
+                    }
+                    
+                } catch (e) { 
+                    console.error(`❌ Error cargando lote:`, e);
+                    failCount += batch.length;
+                }
+            }
+            
+            console.log(`✅ Precarga completada: ${successCount} éxitos, ${failCount} fallos de ${tickers.length} totales`);
+            
+            // Si hubo muchos fallos, intentar fallback con Alpha Vantage para símbolos faltantes
+            if (failCount > tickers.length * 0.3) {
+                console.log('⚠️ Muchos fallos detectados. Iniciando fallback con Alpha Vantage...');
+                await fallbackToAlphaVantage(tickers.filter(t => !newCache.prices[t]));
+            }
+        }
+        
+        // --- FALLBACK A ALPHA VANTAGE ---
+        async function fallbackToAlphaVantage(missingTickers) {
+            if (missingTickers.length === 0) return;
+            
+            console.log(`🔄 Fallback: Obteniendo ${missingTickers.length} símbolos con Alpha Vantage...`);
+            const batchSize = 5;
+            
+            for (let i = 0; i < Math.min(missingTickers.length, 10); i += batchSize) {
+                const batch = missingTickers.slice(i, i + batchSize);
+                
+                for (let ticker of batch) {
+                    try {
+                        const res = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${ALPHA_VANTAGE_KEY}`);
+                        const data = await res.json();
+                        
+                        if (data["Global Quote"] && data["Global Quote"]["05. price"]) {
+                            cachedPrices.prices[ticker] = parseFloat(data["Global Quote"]["05. price"]);
+                            console.log(`✓ Fallback ${ticker}: ${cachedPrices.prices[ticker].toFixed(2)}`);
+                        }
+                        
+                        await new Promise(r => setTimeout(r, 12500)); // 12.5 seg entre llamadas
+                    } catch (e) { 
+                        console.error(`❌ Fallback error ${ticker}:`, e); 
+                    }
+                }
+                
+                localStorage.setItem('sv_cached_prices', JSON.stringify(cachedPrices));
+                updateCacheStatus();
+                
+                if (i + batchSize < Math.min(missingTickers.length, 10)) {
+                    await new Promise(r => setTimeout(r, 60000)); // 1 min entre lotes
+                }
+            }
+        }
+
+        // --- POBLAR DROPDOWN DE TICKERS ---
+        function populateTickerDropdown() {
+            const select = document.getElementById('sim-ticker');
+            const tickers = Object.keys(stockRef).sort();
+            
+            tickers.forEach(ticker => {
+                const option = document.createElement('option');
+                option.value = ticker;
+                const price = cachedPrices.prices && cachedPrices.prices[ticker] 
+                    ? ` - ${cachedPrices.prices[ticker].toFixed(2)}` 
+                    : '';
+                option.textContent = `${ticker} - ${stockRef[ticker].name}${price}`;
+                select.appendChild(option);
+            });
+
+            // Listener para mostrar precio actual
+            select.addEventListener('change', function() {
+                const ticker = this.value;
+                const priceInfo = document.getElementById('ticker-price-info');
+                const priceDisplay = document.getElementById('ticker-current-price');
+                
+                if (ticker && cachedPrices.prices && cachedPrices.prices[ticker]) {
+                    priceDisplay.textContent = `Precio actual: ${cachedPrices.prices[ticker].toFixed(2)} | Beta: ${stockRef[ticker].beta} | Yield: ${stockRef[ticker].yield}%`;
+                    priceInfo.classList.remove('hidden');
+                    
+                    // Auto-rellenar el costo promedio con el precio actual
+                    document.getElementById('sim-cost').value = cachedPrices.prices[ticker].toFixed(2);
+                } else {
+                    priceInfo.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- MOTOR DE PROYECCIÓN SEMANAL & PRECIOS ---
+        async function updatePrices() {
+            const indicator = document.getElementById('live-indicator');
+            indicator.className = "w-2 h-2 rounded-full bg-amber-500 animate-pulse";
+            
+            // Obtener todos los tickers del portafolio
+            const portfolioTickers = portfolio.map(item => item.ticker);
+            
+            if (portfolioTickers.length === 0) {
+                indicator.className = "w-2 h-2 rounded-full bg-slate-300";
+                return;
+            }
+            
+            try {
+                // Intentar obtener precios con Marketstack (más rápido, batch request)
+                const tickerString = portfolioTickers.join(',');
+                const res = await fetch(
+                    `http://api.marketstack.com/v1/eod/latest?access_key=${MARKETSTACK_API_KEY}&symbols=${tickerString}&limit=1`
+                );
+                const data = await res.json();
+                
+                if (data.data && Array.isArray(data.data)) {
+                    // Actualizar precios del portafolio
+                    data.data.forEach(quote => {
+                        const portfolioItem = portfolio.find(item => item.ticker === quote.symbol);
+                        if (portfolioItem) {
+                            portfolioItem.currentPrice = parseFloat(quote.close || quote.open);
+                            // Actualizar caché también
+                            if (!cachedPrices.prices) cachedPrices.prices = {};
+                            cachedPrices.prices[quote.symbol] = portfolioItem.currentPrice;
+                        }
+                    });
+                    
+                    // Guardar caché actualizado
+                    cachedPrices.timestamp = Date.now();
+                    localStorage.setItem('sv_cached_prices', JSON.stringify(cachedPrices));
+                    
+                    console.log(`✅ Precios actualizados vía Marketstack: ${data.data.length}/${portfolioTickers.length}`);
+                } else {
+                    console.warn('⚠️ Marketstack no devolvió datos, usando caché');
+                    // Usar precios en caché
+                    portfolio.forEach(item => {
+                        if (cachedPrices.prices && cachedPrices.prices[item.ticker]) {
+                            item.currentPrice = cachedPrices.prices[item.ticker];
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('❌ Error actualizando precios con Marketstack:', e);
+                // Fallback: usar precios en caché
+                portfolio.forEach(item => {
+                    if (cachedPrices.prices && cachedPrices.prices[item.ticker]) {
+                        item.currentPrice = cachedPrices.prices[item.ticker];
+                    }
+                });
+            }
+            
+            indicator.className = "w-2 h-2 rounded-full bg-emerald-500";
+            saveAndRefresh();
+        }
+
+        function renderDashboard() {
+            const body = document.getElementById('portfolio-body');
+            body.innerHTML = '';
+            let stats = { val: 0, cost: 0, beta: 0, yield: 0, dgr: 0 };
+
+            portfolio.forEach(item => {
+                const marketVal = item.shares * item.currentPrice;
+                const costBasis = item.shares * item.avgCost;
+                const pl = ((item.currentPrice - item.avgCost) / item.avgCost * 100).toFixed(2);
+                
+                stats.val += marketVal;
+                stats.cost += costBasis;
+                stats.beta += (item.beta * marketVal);
+                stats.yield += (item.dividendYield * marketVal);
+                stats.dgr += (item.dgr * marketVal);
+
+                body.innerHTML += `
+                    <tr class="group hover:bg-slate-50 transition-all border-l-4 border-transparent hover:border-indigo-500">
+                        <td class="p-4 ticker-hover" onmouseenter="showChartPopup(event, '${item.ticker}')" onmouseleave="hideChartPopup()">
+                            <div class="flex flex-col">
+                                <span class="font-black text-slate-800 text-sm">${item.ticker}</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${item.sector || 'S/D'}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 text-right font-bold text-sm text-slate-600">${item.shares.toFixed(2)}</td>
+                        <td class="p-4 text-right font-bold text-sm text-slate-800">${item.currentPrice.toFixed(2)}</td>
+                        <td class="p-4 text-right font-black text-sm text-slate-900">${marketVal.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                        <td class="p-4 text-center">
+                            <span class="inline-block px-3 py-1 rounded-full font-black text-xs ${pl >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">
+                                ${pl >= 0 ? '+' : ''}${pl}%
+                            </span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <span class="inline-block px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold">${item.beta}</span>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex gap-2 justify-center">
+                                <button onclick="analyzeTicker('${item.ticker}')" class="px-3 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase hover:bg-indigo-600 hover:text-white transition-all shadow-sm hover:shadow-md" title="Análisis AI">
+                                    <i class="fa-solid fa-brain mr-1"></i>AI
+                                </button>
+                                <button onclick="removePosition(${item.id})" class="px-3 py-2 bg-rose-50 text-rose-600 rounded-xl text-[10px] font-black hover:bg-rose-600 hover:text-white transition-all shadow-sm hover:shadow-md" title="Eliminar posición">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            updateHeaderStats(stats);
+            updateCharts(stats);
+        }
+
+        function updateHeaderStats(stats) {
+            const total = stats.val;
+            const avgY = total > 0 ? (stats.yield / total) : 0;
+            const avgB = total > 0 ? (stats.beta / total) : 0;
+            const avgD = total > 0 ? (stats.dgr / total) : 0;
+            
+            // Meta Semanal: r = (1.20)^(1/52)-1 ≈ 0.35%
+            const weeklyTargetVal = total * 0.0035;
+
+            document.getElementById('total-value').innerText = `$${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            document.getElementById('weekly-target').innerText = `+$${weeklyTargetVal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            document.getElementById('portfolio-beta').innerText = avgB.toFixed(2);
+            
+            // Proyección Anual Estimada
+            const proj = avgY + (avgD * 0.6) + 7;
+            document.getElementById('projection-return').innerText = `${proj.toFixed(1)}%`;
+
+            // Beta UI status
+            const status = document.getElementById('beta-status');
+            status.innerText = avgB < 0.85 ? "Elasticidad Óptima" : "Exposición Moderada";
+            status.className = `text-[10px] font-black mt-1 uppercase ${avgB < 0.85 ? 'text-emerald-500' : 'text-amber-500'}`;
+        }
+
+        // --- OBTENER NOTICIAS DEL MERCADO ---
+        async function fetchMarketNews(ticker) {
+            // Intentar primero con Marketaux si está configurado
+            if (MARKETAUX_API_KEY && MARKETAUX_API_KEY !== "") {
+                try {
+                    const res = await fetch(
+                        `https://api.marketaux.com/v1/news/all?symbols=${ticker}&filter_entities=true&language=en&api_token=${MARKETAUX_API_KEY}&limit=3`
+                    );
+                    const data = await res.json();
+                    
+                    if (data.data && data.data.length > 0) {
+                        return data.data.map(article => ({
+                            title: article.title,
+                            description: article.description || article.snippet,
+                            sentiment: article.entities?.find(e => e.symbol === ticker)?.sentiment_score || 0,
+                            published: article.published_at
+                        }));
+                    }
+                } catch (e) {
+                    console.warn('No se pudieron obtener noticias de Marketaux:', e);
+                }
+            }
+            
+            // Fallback: usar Alpha Vantage News Sentiment (gratis pero limitado)
+            try {
+                const res = await fetch(
+                    `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${ALPHA_VANTAGE_KEY}&limit=3`
+                );
+                const data = await res.json();
+                
+                if (data.feed && data.feed.length > 0) {
+                    return data.feed.map(article => ({
+                        title: article.title,
+                        description: article.summary,
+                        sentiment: parseFloat(article.ticker_sentiment?.find(t => t.ticker === ticker)?.ticker_sentiment_score || 0),
+                        published: article.time_published
+                    }));
+                }
+            } catch (e) {
+                console.warn('No se pudieron obtener noticias de Alpha Vantage:', e);
+            }
+            
+            return [];
+        }
+
+        // --- BLACKBOX AI AGENT INTEGRATION CON ANÁLISIS MEJORADO ---
+        async function analyzeTicker(ticker) {
+            if (!BLACKBOX_API_KEY || BLACKBOX_API_KEY === "$BLACKBOX_API_KEY") {
+                openAIModal(ticker, '<p class="text-rose-400 text-sm font-bold">⚠️ API KEY DE BLACKBOX NO CONFIGURADA.</p><p class="text-slate-400 text-xs mt-2">Por favor, configura tu API key en la variable BLACKBOX_API_KEY.</p>');
+                return;
+            }
+
+            // Abrir modal y mostrar loader
+            openAIModal(ticker, null, true);
+
+            try {
+                // Obtener datos históricos del cache o API
+                const historicalData = await fetchHistoricalData(ticker);
+                
+                // Obtener noticias y sentimiento
+                const newsData = await fetchMarketNews(ticker);
+                
+                // Preparar contexto enriquecido para la IA
+                let contextPrompt = `Analiza el ticker ${ticker} (${stockRef[ticker]?.name || 'Desconocido'}) para los próximos 7 días.\n\n`;
+                
+                // Agregar datos técnicos
+                contextPrompt += `DATOS TÉCNICOS:\n`;
+                contextPrompt += `- Beta: ${stockRef[ticker]?.beta || 'N/A'} (Elasticidad del mercado)\n`;
+                contextPrompt += `- Dividend Yield: ${stockRef[ticker]?.yield || 0}%\n`;
+                contextPrompt += `- DGR (Crecimiento dividendos): ${stockRef[ticker]?.dgr || 0}%\n`;
+                contextPrompt += `- Sector: ${stockRef[ticker]?.sector || 'N/A'}\n\n`;
+                
+                // Agregar datos históricos si están disponibles
+                if (historicalData && historicalData.prices) {
+                    contextPrompt += `RENDIMIENTO ÚLTIMOS 7 DÍAS:\n`;
+                    contextPrompt += `- Cambio: ${historicalData.change}%\n`;
+                    contextPrompt += `- Máximo: $${historicalData.high.toFixed(2)}\n`;
+                    contextPrompt += `- Mínimo: $${historicalData.low.toFixed(2)}\n`;
+                    contextPrompt += `- Precio actual: $${historicalData.prices[historicalData.prices.length - 1].toFixed(2)}\n`;
+                    contextPrompt += `- Volatilidad: ${((historicalData.high - historicalData.low) / historicalData.low * 100).toFixed(2)}%\n\n`;
+                }
+                
+                // Agregar noticias y sentimiento si están disponibles
+                if (newsData.length > 0) {
+                    contextPrompt += `NOTICIAS RECIENTES Y SENTIMIENTO:\n`;
+                    newsData.forEach((news, idx) => {
+                        const sentimentLabel = news.sentiment > 0.15 ? '📈 Positivo' : 
+                                              news.sentiment < -0.15 ? '📉 Negativo' : '➡️ Neutral';
+                        contextPrompt += `${idx + 1}. ${news.title}\n   Sentimiento: ${sentimentLabel} (${news.sentiment.toFixed(2)})\n`;
+                    });
+                    contextPrompt += `\n`;
+                }
+                
+                // Agregar objetivo del análisis
+                contextPrompt += `OBJETIVO:\n`;
+                contextPrompt += `Evalúa si este activo ayudará a mantener la proyección semanal de 0.35% de retorno.\n`;
+                contextPrompt += `Considera la elasticidad (Beta), el momentum histórico, el sentimiento del mercado y factores de riesgo.\n\n`;
+                contextPrompt += `Responde en español con:\n`;
+                contextPrompt += `1. Análisis técnico (precio y volatilidad)\n`;
+                contextPrompt += `2. Análisis fundamental (Beta, sector, noticias)\n`;
+                contextPrompt += `3. Recomendación específica (COMPRAR/MANTENER/VENDER) con razones\n`;
+                
+                const API_URL = "https://api.blackbox.ai/chat/completions";
+                
+                const requestData = {
+                    "model": "blackboxai/openai/gpt-4",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": contextPrompt
+                        }
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 800,
+                    "stream": false
+                };
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${BLACKBOX_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const responseData = await response.json();
+                console.log('Respuesta IA:', responseData);
+                
+                if (responseData.choices && responseData.choices[0] && responseData.choices[0].message) {
+                    const aiResponse = responseData.choices[0].message.content;
+                    
+                    // Formatear respuesta con secciones y datos históricos
+                    let formattedResponse = `<div class="space-y-4 text-sm leading-relaxed">`;
+                    
+                    // Agregar contexto histórico si está disponible
+                    if (historicalData && historicalData.prices) {
+                        const changeClass = parseFloat(historicalData.change) >= 0 ? 'text-emerald-400' : 'text-rose-400';
+                        const changeIcon = parseFloat(historicalData.change) >= 0 ? '📈' : '📉';
+                        
+                        formattedResponse += `
+                            <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                                <h4 class="text-xs font-black uppercase text-slate-400 mb-2">📊 Datos Históricos (7 días)</h4>
+                                <div class="grid grid-cols-2 gap-3 text-xs">
+                                    <div>
+                                        <span class="text-slate-500">Cambio:</span>
+                                        <span class="font-bold ${changeClass}"> ${changeIcon} ${historicalData.change}%</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-500">Volatilidad:</span>
+                                        <span class="font-bold text-amber-400"> ${((historicalData.high - historicalData.low) / historicalData.low * 100).toFixed(2)}%</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-500">Máximo:</span>
+                                        <span class="font-bold text-indigo-400"> $${historicalData.high.toFixed(2)}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-500">Mínimo:</span>
+                                        <span class="font-bold text-purple-400"> $${historicalData.low.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Agregar noticias si están disponibles
+                    if (newsData && newsData.length > 0) {
+                        formattedResponse += `
+                            <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                                <h4 class="text-xs font-black uppercase text-slate-400 mb-3">📰 Noticias Recientes</h4>
+                                <div class="space-y-2">
+                        `;
+                        
+                        newsData.forEach(news => {
+                            const sentimentEmoji = news.sentiment > 0.15 ? '😊' : news.sentiment < -0.15 ? '😟' : '😐';
+                            const sentimentColor = news.sentiment > 0.15 ? 'text-emerald-400' : news.sentiment < -0.15 ? 'text-rose-400' : 'text-slate-400';
+                            
+                            formattedResponse += `
+                                <div class="text-xs border-l-2 border-indigo-500 pl-3 py-1">
+                                    <p class="font-bold text-slate-200">${news.title}</p>
+                                    <p class="${sentimentColor} text-[10px] mt-1">
+                                        ${sentimentEmoji} Sentimiento: ${news.sentiment > 0 ? '+' : ''}${news.sentiment.toFixed(2)}
+                                    </p>
+                                </div>
+                            `;
+                        });
+                        
+                        formattedResponse += `
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Agregar análisis de IA
+                    formattedResponse += `
+                        <div class="bg-gradient-to-br from-indigo-900/30 to-purple-900/30 rounded-xl p-4 border border-indigo-500/30">
+                            <h4 class="text-xs font-black uppercase text-indigo-300 mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-brain"></i> Análisis Inteligente
+                            </h4>
+                            <div class="text-sm leading-relaxed">
+                                ${aiResponse.replace(/\n/g, '<br><br>')}
+                            </div>
+                        </div>
+                    `;
+                    
+                    formattedResponse += `</div>`;
+                    
+                    openAIModal(ticker, formattedResponse);
+                } else {
+                    throw new Error('Respuesta inválida de la API');
+                }
+            } catch (err) {
+                console.error('Error en analyzeTicker:', err);
+                openAIModal(ticker, `<p class="text-rose-400 text-sm font-bold">❌ Error al conectar con BlackboxAI</p><p class="text-slate-400 text-xs mt-2">Revisa la conexión o el saldo de la API.</p><pre class="text-xs text-slate-500 mt-3 bg-slate-900/50 p-3 rounded-lg overflow-auto">${err.message}</pre>`);
+            }
+        }
+
+        function openAIModal(ticker, content, showLoader = false) {
+            const modal = document.getElementById('ai-modal');
+            const modalTicker = document.getElementById('ai-modal-ticker');
+            const modalContent = document.getElementById('ai-modal-content');
+            const modalLoader = document.getElementById('ai-modal-loader');
+
+            // Manejo especial para análisis global
+            if (ticker === 'PORTAFOLIO GLOBAL') {
+                modalTicker.textContent = '🎯 Portafolio Completo - Análisis Global';
+            } else {
+                modalTicker.textContent = `${ticker} - ${stockRef[ticker]?.name || 'Análisis de Mercado'}`;
+            }
+            
+            if (showLoader) {
+                modalLoader.classList.remove('hidden');
+                modalContent.innerHTML = '';
+            } else {
+                modalLoader.classList.add('hidden');
+                modalContent.innerHTML = content;
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeAIModal() {
+            document.getElementById('ai-modal').classList.add('hidden');
+        }
+
+        // --- AI PORTFOLIO BUILDER ---
+        let recommendedPortfolio = [];
+
+        function openAIPortfolioBuilder() {
+            const modal = document.getElementById('ai-portfolio-modal');
+            document.getElementById('ai-portfolio-form').classList.remove('hidden');
+            document.getElementById('ai-portfolio-loader').classList.add('hidden');
+            document.getElementById('ai-portfolio-result').classList.add('hidden');
+            modal.classList.remove('hidden');
+        }
+
+        function closeAIPortfolioModal() {
+            document.getElementById('ai-portfolio-modal').classList.add('hidden');
+            recommendedPortfolio = [];
+        }
+
+        async function generateAIPortfolio() {
+            if (!BLACKBOX_API_KEY || BLACKBOX_API_KEY === "$BLACKBOX_API_KEY") {
+                alert('⚠️ API KEY DE BLACKBOX NO CONFIGURADA.\n\nPor favor, configura tu API key en la variable BLACKBOX_API_KEY.');
+                return;
+            }
+
+            const capital = parseFloat(document.getElementById('portfolio-capital').value);
+            const risk = document.getElementById('portfolio-risk').value;
+            const goal = document.getElementById('portfolio-goal').value;
+
+            if (!capital || capital <= 0) {
+                alert('Por favor ingresa un capital válido.');
+                return;
+            }
+
+            // Mostrar loader
+            document.getElementById('ai-portfolio-form').classList.add('hidden');
+            document.getElementById('ai-portfolio-loader').classList.remove('hidden');
+
+            try {
+                // Preparar contexto de símbolos disponibles
+                const availableSymbols = Object.keys(stockRef).map(ticker => {
+                    const stock = stockRef[ticker];
+                    return `${ticker} (${stock.name}): Beta=${stock.beta}, Yield=${stock.yield}%, DGR=${stock.dgr}%, Sector=${stock.sector}`;
+                }).join('\n');
+
+                const riskDesc = {
+                    'conservative': 'conservador con Beta menor a 0.7, priorizando estabilidad y dividendos altos',
+                    'moderate': 'moderado con Beta entre 0.7 y 1.2, balanceando crecimiento y estabilidad',
+                    'aggressive': 'agresivo con Beta mayor a 1.2, priorizando alto crecimiento'
+                };
+
+                const goalDesc = {
+                    'dividend': 'maximizar ingresos por dividendos (Yield alto)',
+                    'growth': 'maximizar crecimiento de capital (DGR alto)',
+                    'balanced': 'balancear dividendos y crecimiento'
+                };
+
+                const prompt = `Eres un asesor financiero experto. Crea un portafolio de inversión optimizado con las siguientes características:
+
+Capital: ${capital.toLocaleString()}
+Perfil de Riesgo: ${riskDesc[risk]}
+Objetivo: ${goalDesc[goal]}
+
+Símbolos disponibles:
+${availableSymbols}
+
+INSTRUCCIONES:
+1. Selecciona entre 5-8 símbolos que mejor se ajusten al perfil
+2. Diversifica por sectores (máximo 30% en un sector)
+3. Calcula la cantidad de acciones para cada símbolo basándote en el capital disponible
+4. Asegura que el Beta promedio del portafolio se alinee con el perfil de riesgo
+5. Proyecta el rendimiento esperado a 7 días y 12 meses
+
+FORMATO DE RESPUESTA (ESTRICTO):
+Responde SOLO con un JSON válido en este formato exacto:
+{
+  "analysis": "Breve análisis de la estrategia (2-3 líneas)",
+  "portfolio": [
+    {"ticker": "AAPL", "shares": 10, "reason": "Razón breve"},
+    {"ticker": "JNJ", "shares": 15, "reason": "Razón breve"}
+  ],
+  "metrics": {
+    "avgBeta": 0.85,
+    "avgYield": 2.5,
+    "weeklyProjection": 0.4,
+    "yearlyProjection": 18.5
+  }
+}
+
+NO incluyas texto adicional, SOLO el JSON.`;
+
+                const API_URL = "https://api.blackbox.ai/chat/completions";
+                const requestData = {
+                    "model": "blackboxai/openai/gpt-4",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    "temperature": 0.8,
+                    "max_tokens": 1024,
+                    "stream": false
+                };
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${BLACKBOX_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const responseData = await response.json();
+                console.log('AI Response:', responseData);
+
+                if (responseData.choices && responseData.choices[0] && responseData.choices[0].message) {
+                    const aiContent = responseData.choices[0].message.content;
+                    
+                    // Extraer JSON de la respuesta
+                    let jsonMatch = aiContent.match(/\{[\s\S]*\}/);
+                    if (!jsonMatch) {
+                        throw new Error('No se pudo extraer JSON de la respuesta');
+                    }
+
+                    const portfolioData = JSON.parse(jsonMatch[0]);
+                    displayAIPortfolio(portfolioData, capital);
+                } else {
+                    throw new Error('Respuesta inválida de la API');
+                }
+            } catch (err) {
+                console.error('Error en generateAIPortfolio:', err);
+                document.getElementById('ai-portfolio-loader').classList.add('hidden');
+                document.getElementById('ai-portfolio-form').classList.remove('hidden');
+                alert(`❌ Error al generar portafolio:\n${err.message}\n\nIntenta nuevamente.`);
+            }
+        }
+
+        function displayAIPortfolio(data, capital) {
+            recommendedPortfolio = data.portfolio;
+
+            // Mostrar análisis
+            const contentDiv = document.getElementById('ai-portfolio-content');
+            contentDiv.innerHTML = `
+                <p class="text-slate-300 mb-4">${data.analysis}</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-900/50 p-4 rounded-xl">
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase font-black">Beta Promedio</p>
+                        <p class="text-lg font-black text-purple-400">${data.metrics.avgBeta.toFixed(2)}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase font-black">Yield Promedio</p>
+                        <p class="text-lg font-black text-emerald-400">${data.metrics.avgYield.toFixed(2)}%</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase font-black">Proyección 7D</p>
+                        <p class="text-lg font-black text-indigo-400">+${data.metrics.weeklyProjection.toFixed(2)}%</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase font-black">Proyección 12M</p>
+                        <p class="text-lg font-black text-amber-400">+${data.metrics.yearlyProjection.toFixed(1)}%</p>
+                    </div>
+                </div>
+            `;
+
+            // Mostrar símbolos
+            const symbolsDiv = document.getElementById('ai-portfolio-symbols');
+            symbolsDiv.innerHTML = data.portfolio.map(item => {
+                const stock = stockRef[item.ticker];
+                const estimatedCost = (cachedPrices.prices && cachedPrices.prices[item.ticker]) 
+                    ? cachedPrices.prices[item.ticker] * item.shares 
+                    : 0;
+                
+                return `
+                    <div class="bg-slate-900/50 p-3 rounded-xl border border-purple-500/20 hover:border-purple-500/50 transition-all">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-black text-white text-sm">${item.ticker}</span>
+                            <span class="text-xs font-bold text-slate-400">${item.shares}x</span>
+                        </div>
+                        <p class="text-[10px] text-slate-500 mb-1">${stock?.name || 'N/A'}</p>
+                        <p class="text-xs text-purple-300 font-bold">~${estimatedCost.toFixed(0)}</p>
+                        <p class="text-[9px] text-slate-400 mt-1 italic">${item.reason}</p>
+                    </div>
+                `;
+            }).join('');
+
+            // Mostrar resultado
+            document.getElementById('ai-portfolio-loader').classList.add('hidden');
+            document.getElementById('ai-portfolio-result').classList.remove('hidden');
+        }
+
+        async function applyAIPortfolio() {
+            if (recommendedPortfolio.length === 0) {
+                alert('No hay portafolio para aplicar.');
+                return;
+            }
+
+            if (!confirm(`¿Deseas agregar ${recommendedPortfolio.length} posiciones al portafolio?\n\nEsto agregará las posiciones recomendadas por la IA.`)) {
+                return;
+            }
+
+            // Verificar cuántos símbolos tienen precios reales
+            const tickersWithoutPrice = recommendedPortfolio.filter(item => 
+                !cachedPrices.prices || !cachedPrices.prices[item.ticker]
+            );
+
+            if (tickersWithoutPrice.length > 0) {
+                const shouldFetch = confirm(
+                    `⚠️ ${tickersWithoutPrice.length} símbolos no tienen precio en caché:\n${tickersWithoutPrice.map(i => i.ticker).join(', ')}\n\n` +
+                    `¿Deseas obtener precios actuales? (Tomará ~${tickersWithoutPrice.length * 13} segundos)\n\n` +
+                    `Si cancelas, se usarán precios estimados.`
+                );
+
+                if (shouldFetch) {
+                    // Obtener precios faltantes
+                    for (let item of tickersWithoutPrice) {
+                        try {
+                            console.log(`Obteniendo precio de ${item.ticker}...`);
+                            const res = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${item.ticker}&apikey=${ALPHA_VANTAGE_KEY}`);
+                            const data = await res.json();
+                            
+                            if (data["Global Quote"] && data["Global Quote"]["05. price"]) {
+                                if (!cachedPrices.prices) cachedPrices.prices = {};
+                                cachedPrices.prices[item.ticker] = parseFloat(data["Global Quote"]["05. price"]);
+                                console.log(`✓ ${item.ticker}: ${cachedPrices.prices[item.ticker].toFixed(2)}`);
+                            }
+                            
+                            await new Promise(r => setTimeout(r, 13000)); // 13 segundos entre llamadas
+                        } catch (e) {
+                            console.error(`Error obteniendo precio de ${item.ticker}:`, e);
+                        }
+                    }
+                    
+                    // Actualizar caché
+                    cachedPrices.timestamp = Date.now();
+                    localStorage.setItem('sv_cached_prices', JSON.stringify(cachedPrices));
+                }
+            }
+
+            recommendedPortfolio.forEach(item => {
+                const ticker = item.ticker;
+                const shares = item.shares;
+                const ref = stockRef[ticker];
+                
+                if (!ref) return;
+
+                // Usar precio en caché o estimado
+                const currentPrice = (cachedPrices.prices && cachedPrices.prices[ticker]) 
+                    ? cachedPrices.prices[ticker] 
+                    : 100; // Precio estimado si no hay caché
+
+                portfolio.push({
+                    id: Date.now() + Math.random(),
+                    ticker,
+                    shares,
+                    avgCost: currentPrice,
+                    currentPrice: currentPrice,
+                    beta: ref.beta,
+                    dgr: ref.dgr,
+                    dividendYield: ref.yield,
+                    sector: ref.sector
+                });
+            });
+
+            saveAndRefresh();
+            closeAIPortfolioModal();
+            
+            const realPrices = recommendedPortfolio.filter(item => 
+                cachedPrices.prices && cachedPrices.prices[item.ticker]
+            ).length;
+            
+            alert(`✅ Portafolio AI aplicado exitosamente!\n\n${recommendedPortfolio.length} posiciones agregadas.\n${realPrices} con precios reales, ${recommendedPortfolio.length - realPrices} con precios estimados.`);
+        }
+
+        async function getGlobalForecast() {
+            if (portfolio.length === 0) {
+                alert('⚠️ No hay activos en el portafolio para analizar.');
+                return;
+            }
+            
+            if (!BLACKBOX_API_KEY || BLACKBOX_API_KEY === "$BLACKBOX_API_KEY") {
+                alert('⚠️ API KEY DE BLACKBOX NO CONFIGURADA.');
+                return;
+            }
+            
+            // Abrir modal con identificador especial para análisis global
+            openAIModal('PORTAFOLIO GLOBAL', null, true);
+            
+            try {
+                // Preparar datos del portafolio
+                const tickers = portfolio.map(p => p.ticker).join(", ");
+                let totalValue = 0;
+                let weightedBeta = 0;
+                let weightedYield = 0;
+                let sectorAllocation = {};
+                
+                portfolio.forEach(item => {
+                    const value = item.shares * item.currentPrice;
+                    totalValue += value;
+                    weightedBeta += item.beta * value;
+                    weightedYield += item.dividendYield * value;
+                    
+                    const sector = item.sector || 'Otro';
+                    sectorAllocation[sector] = (sectorAllocation[sector] || 0) + value;
+                });
+                
+                const avgBeta = totalValue > 0 ? weightedBeta / totalValue : 0;
+                const avgYield = totalValue > 0 ? weightedYield / totalValue : 0;
+                
+                // Formatear asignación sectorial
+                const sectorBreakdown = Object.entries(sectorAllocation)
+                    .map(([sector, value]) => `  - ${sector}: ${((value/totalValue)*100).toFixed(1)}%`)
+                    .join('\n');
+                
+                // Obtener noticias de los principales activos (top 3 por peso)
+                const topHoldings = [...portfolio]
+                    .sort((a, b) => (b.shares * b.currentPrice) - (a.shares * a.currentPrice))
+                    .slice(0, 3);
+                
+                let newsContext = '';
+                for (const holding of topHoldings) {
+                    const news = await fetchMarketNews(holding.ticker);
+                    if (news.length > 0) {
+                        newsContext += `\n${holding.ticker}:\n`;
+                        news.slice(0, 2).forEach(n => {
+                            const sentiment = n.sentiment > 0.15 ? '📈 Positivo' : 
+                                            n.sentiment < -0.15 ? '📉 Negativo' : '➡️ Neutral';
+                            newsContext += `  - ${n.title} (${sentiment}: ${n.sentiment.toFixed(2)})\n`;
+                        });
+                    }
+                }
+                
+                // Construir prompt para análisis global
+                const contextPrompt = `Analiza el siguiente portafolio de inversión para los próximos 7 días.\n\n` +
+                    `COMPOSICIÓN DEL PORTAFOLIO:\n` +
+                    `- Símbolos: ${tickers}\n` +
+                    `- Valor total: $${totalValue.toLocaleString('en-US', {minimumFractionDigits: 2})}\n` +
+                    `- Número de posiciones: ${portfolio.length}\n\n` +
+                    `MÉTRICAS GLOBALES:\n` +
+                    `- Beta promedio ponderado: ${avgBeta.toFixed(2)}\n` +
+                    `- Yield promedio: ${avgYield.toFixed(2)}%\n\n` +
+                    `DIVERSIFICACIÓN SECTORIAL:\n${sectorBreakdown}\n` +
+                    (newsContext ? `\nNOTICIAS RECIENTES (Principales Posiciones):\n${newsContext}` : '') +
+                    `\nOBJETIVO:\n` +
+                    `Evalúa si este portafolio diversificado puede alcanzar la meta de 0.35% de retorno semanal (20% anual).\n` +
+                    `Considera:\n` +
+                    `1. Diversificación y balance sectorial\n` +
+                    `2. Exposición al riesgo (Beta global)\n` +
+                    `3. Correlación entre activos\n` +
+                    `4. Sentimiento del mercado según noticias\n` +
+                    `5. Ajustes recomendados (si aplica)\n\n` +
+                    `Responde en español con una evaluación completa y recomendaciones concretas.`;
+                
+                const API_URL = "https://api.blackbox.ai/chat/completions";
+                const requestData = {
+                    "model": "blackboxai/openai/gpt-4",
+                    "messages": [{ "role": "user", "content": contextPrompt }],
+                    "temperature": 0.7,
+                    "max_tokens": 1000,
+                    "stream": false
+                };
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${BLACKBOX_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const responseData = await response.json();
+                
+                if (responseData.choices && responseData.choices[0] && responseData.choices[0].message) {
+                    const aiResponse = responseData.choices[0].message.content;
+                    
+                    // Formatear respuesta para análisis global
+                    let formattedResponse = `<div class="space-y-4 text-sm leading-relaxed">`;
+                    
+                    // Resumen del portafolio
+                    formattedResponse += `
+                        <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                            <h4 class="text-xs font-black uppercase text-slate-400 mb-3">📊 Resumen del Portafolio</h4>
+                            <div class="grid grid-cols-2 gap-3 text-xs">
+                                <div>
+                                    <span class="text-slate-500">Valor Total:</span>
+                                    <span class="font-bold text-emerald-400"> $${totalValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500">Posiciones:</span>
+                                    <span class="font-bold text-indigo-400"> ${portfolio.length}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500">Beta Promedio:</span>
+                                    <span class="font-bold text-amber-400"> ${avgBeta.toFixed(2)}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500">Yield Promedio:</span>
+                                    <span class="font-bold text-purple-400"> ${avgYield.toFixed(2)}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Diversificación sectorial
+                    formattedResponse += `
+                        <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                            <h4 class="text-xs font-black uppercase text-slate-400 mb-3">🎯 Diversificación</h4>
+                            <div class="space-y-2 text-xs">
+                    `;
+                    
+                    Object.entries(sectorAllocation).forEach(([sector, value]) => {
+                        const percentage = (value/totalValue)*100;
+                        formattedResponse += `
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-300">${sector}</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-24 h-2 bg-slate-700 rounded-full overflow-hidden">
+                                        <div class="h-full bg-indigo-500" style="width: ${percentage}%"></div>
+                                    </div>
+                                    <span class="font-bold text-indigo-400 w-12 text-right">${percentage.toFixed(1)}%</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    formattedResponse += `
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Análisis de IA
+                    formattedResponse += `
+                        <div class="bg-gradient-to-br from-indigo-900/30 to-purple-900/30 rounded-xl p-4 border border-indigo-500/30">
+                            <h4 class="text-xs font-black uppercase text-indigo-300 mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-brain"></i> Análisis Global del Portafolio
+                            </h4>
+                            <div class="text-sm leading-relaxed">
+                                ${aiResponse.replace(/\n/g, '<br><br>')}
+                            </div>
+                        </div>
+                    `;
+                    
+                    formattedResponse += `</div>`;
+                    
+                    openAIModal('PORTAFOLIO GLOBAL', formattedResponse);
+                } else {
+                    throw new Error('Respuesta inválida de la API');
+                }
+            } catch (err) {
+                console.error('Error en getGlobalForecast:', err);
+                openAIModal('PORTAFOLIO GLOBAL', `<p class="text-rose-400 text-sm font-bold">❌ Error al generar análisis global</p><p class="text-slate-400 text-xs mt-2">Revisa la conexión o el saldo de la API.</p><pre class="text-xs text-slate-500 mt-3 bg-slate-900/50 p-3 rounded-lg overflow-auto">${err.message}</pre>`);
+            }
+        }
+
+        // --- VISUALIZACIÓN ---
+        function updateCharts(stats) {
+            updateWeeklyChart(stats);
+            updateDiversificationChart();
+        }
+
+        function updateWeeklyChart(stats) {
+            const ctx = document.getElementById('weeklyChart').getContext('2d');
+            const total = stats.val;
+            const weeklyRate = 0.0035; // 0.35% semanal
+
+            const labels = Array.from({length: 8}, (_, i) => `Día ${i}`);
+            // Proyección lineal/compuesta diaria para 1 semana
+            const dailyRate = Math.pow(1 + weeklyRate, 1/7) - 1;
+            const dataPoints = Array.from({length: 8}, (_, i) => total * Math.pow(1 + dailyRate, i));
+
+            if (chartInstances.weekly) chartInstances.weekly.destroy();
+            if (portfolio.length === 0) return;
+
+            chartInstances.weekly = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Proyección 7 Días',
+                        data: dataPoints,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { ticks: { callback: v => '$' + v.toLocaleString() }, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function updateDiversificationChart() {
+            const ctx = document.getElementById('diversificationChart').getContext('2d');
+            const data = portfolio.map(item => item.shares * item.currentPrice);
+            const labels = portfolio.map(item => item.ticker);
+
+            if (chartInstances.diversification) chartInstances.diversification.destroy();
+            if (portfolio.length === 0) return;
+
+            chartInstances.diversification = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#0f172a'],
+                        borderWidth: 0,
+                        borderRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, font: { weight: 'bold', size: 9 } } }
+                    }
+                }
+            });
+        }
+
+        // --- UTILIDADES ---
+        function saveAndRefresh() {
+            localStorage.setItem('sv_dividend_portfolio', JSON.stringify(portfolio));
+            renderDashboard();
+        }
+
+        function toggleModal() {
+            document.getElementById('sim-modal').classList.toggle('hidden');
+        }
+
+        function removePosition(itemId) {
+            if (confirm('¿Estás seguro de eliminar esta posición del portafolio?')) {
+                portfolio = portfolio.filter(item => item.id !== itemId);
+                saveAndRefresh();
+            }
+        }
+
+        document.getElementById('sim-form').onsubmit = (e) => {
+            e.preventDefault();
+            const ticker = document.getElementById('sim-ticker').value.toUpperCase();
+            const shares = parseFloat(document.getElementById('sim-shares').value);
+            const cost = parseFloat(document.getElementById('sim-cost').value);
+            const ref = stockRef[ticker] || { beta: 1.0, dgr: 5.0, yield: 3.5, sector: 'Simulación' };
+
+            // Usar precio en caché si está disponible, sino usar el costo ingresado
+            const currentPrice = (cachedPrices.prices && cachedPrices.prices[ticker]) 
+                ? cachedPrices.prices[ticker] 
+                : cost;
+
+            portfolio.push({
+                id: Date.now(), ticker, shares, avgCost: cost,
+                currentPrice: currentPrice, beta: ref.beta, dgr: ref.dgr,
+                dividendYield: ref.yield, sector: ref.sector
+            });
+            saveAndRefresh();
+            toggleModal();
+            e.target.reset();
+            document.getElementById('ticker-price-info').classList.add('hidden');
+        };
+
+        function startTimer() {
+            setInterval(() => {
+                timeLeft--;
+                const m = Math.floor(timeLeft / 60);
+                const s = timeLeft % 60;
+                document.getElementById('update-timer').innerText = `Next Refresh: ${m}:${s < 10 ? '0' : ''}${s}`;
+                if (timeLeft <= 0) {
+                    updatePrices();
+                    timeLeft = 300;
+                }
+            }, 1000);
+        }
+
+        // --- CHART POPUP HOVER ---
+        async function showChartPopup(event, ticker) {
+            clearTimeout(popupTimeout);
+            
+            popupTimeout = setTimeout(async () => {
+                const popup = document.getElementById('chart-popup');
+                const loader = document.getElementById('popup-loader');
+                const tickerEl = document.getElementById('popup-ticker');
+                const nameEl = document.getElementById('popup-name');
+                const statsEl = document.getElementById('popup-stats');
+                
+                // Posicionar popup
+                const rect = event.target.closest('td').getBoundingClientRect();
+                popup.style.left = `${rect.right + 20}px`;
+                popup.style.top = `${rect.top}px`;
+                
+                // Mostrar popup con info básica
+                tickerEl.textContent = ticker;
+                nameEl.textContent = stockRef[ticker]?.name || 'Cargando...';
+                statsEl.innerHTML = '<div class="col-span-3 text-xs text-slate-400">Cargando datos...</div>';
+                loader.classList.remove('hidden');
+                popup.classList.add('active');
+                
+                // Obtener datos históricos
+                const historicalData = await fetchHistoricalData(ticker);
+                
+                if (historicalData && historicalData.dates.length > 0) {
+                    loader.classList.add('hidden');
+                    renderPopupChart(historicalData);
+                    displayPopupStats(historicalData, ticker);
+                } else {
+                    loader.classList.add('hidden');
+                    statsEl.innerHTML = '<div class="col-span-3 text-xs text-rose-400">⚠️ No hay datos disponibles</div>';
+                }
+            }, 500); // Delay de 500ms antes de mostrar
+        }
+
+        function hideChartPopup() {
+            clearTimeout(popupTimeout);
+            const popup = document.getElementById('chart-popup');
+            popup.classList.remove('active');
+        }
+
+        async function fetchHistoricalData(ticker) {
+            // Verificar caché (válido por 1 hora)
+            const now = Date.now();
+            const cacheKey = ticker;
+            
+            if (historicalDataCache[cacheKey] && 
+                (now - historicalDataCache[cacheKey].timestamp) < 3600000) {
+                console.log(`Usando datos históricos en caché para ${ticker}`);
+                return historicalDataCache[cacheKey].data;
+            }
+
+            try {
+                console.log(`📊 Obteniendo datos históricos de ${ticker} con Marketstack...`);
+                
+                // Intentar primero con Marketstack (más confiable para históricos)
+                const today = new Date();
+                const sevenDaysAgo = new Date(today);
+                sevenDaysAgo.setDate(today.getDate() - 7);
+                
+                const dateFrom = sevenDaysAgo.toISOString().split('T')[0];
+                const dateTo = today.toISOString().split('T')[0];
+                
+                const res = await fetch(
+                    `http://api.marketstack.com/v1/eod?access_key=${MARKETSTACK_API_KEY}&symbols=${ticker}&date_from=${dateFrom}&date_to=${dateTo}&limit=7`
+                );
+                const data = await res.json();
+
+                if (data.data && data.data.length > 0) {
+                    // Marketstack devuelve datos más recientes primero, invertir para orden cronológico
+                    const sortedData = data.data.reverse();
+                    
+                    const dates = sortedData.map(d => d.date.split('T')[0]);
+                    const prices = sortedData.map(d => parseFloat(d.close));
+                    
+                    const historicalData = {
+                        dates: dates.map(d => new Date(d).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })),
+                        prices: prices,
+                        high: Math.max(...prices),
+                        low: Math.min(...prices),
+                        change: ((prices[prices.length - 1] - prices[0]) / prices[0] * 100).toFixed(2)
+                    };
+
+                    // Guardar en caché
+                    historicalDataCache[cacheKey] = {
+                        timestamp: now,
+                        data: historicalData
+                    };
+                    localStorage.setItem('sv_historical_data', JSON.stringify(historicalDataCache));
+
+                    console.log(`✓ Datos históricos obtenidos: ${prices.length} días`);
+                    return historicalData;
+                } else {
+                    console.warn(`⚠️ Marketstack no devolvió datos para ${ticker}, intentando Alpha Vantage...`);
+                    return await fetchHistoricalDataFallback(ticker);
+                }
+            } catch (err) {
+                console.error(`❌ Error obteniendo datos históricos de ${ticker}:`, err);
+                // Fallback a Alpha Vantage
+                return await fetchHistoricalDataFallback(ticker);
+            }
+        }
+        
+        // Fallback para datos históricos con Alpha Vantage
+        async function fetchHistoricalDataFallback(ticker) {
+            try {
+                const res = await fetch(
+                    `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=${ALPHA_VANTAGE_KEY}&outputsize=compact`
+                );
+                const data = await res.json();
+
+                if (data['Time Series (Daily)']) {
+                    const timeSeries = data['Time Series (Daily)'];
+                    const dates = Object.keys(timeSeries).slice(0, 7).reverse();
+                    const prices = dates.map(date => parseFloat(timeSeries[date]['4. close']));
+                    
+                    const historicalData = {
+                        dates: dates.map(d => new Date(d).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })),
+                        prices: prices,
+                        high: Math.max(...prices),
+                        low: Math.min(...prices),
+                        change: ((prices[prices.length - 1] - prices[0]) / prices[0] * 100).toFixed(2)
+                    };
+
+                    // Guardar en caché
+                    historicalDataCache[ticker] = {
+                        timestamp: Date.now(),
+                        data: historicalData
+                    };
+                    localStorage.setItem('sv_historical_data', JSON.stringify(historicalDataCache));
+
+                    console.log(`✓ Fallback exitoso con Alpha Vantage`);
+                    return historicalData;
+                } else {
+                    console.warn(`No hay datos históricos disponibles para ${ticker}`);
+                    return null;
+                }
+            } catch (err) {
+                console.error(`Error en fallback Alpha Vantage para ${ticker}:`, err);
+                return null;
+            }
+        }
+
+        function renderPopupChart(data) {
+            const ctx = document.getElementById('popup-chart').getContext('2d');
+            
+            if (chartInstances.popup) {
+                chartInstances.popup.destroy();
+            }
+
+            const isPositive = parseFloat(data.change) >= 0;
+
+            chartInstances.popup = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.dates,
+                    datasets: [{
+                        label: 'Precio',
+                        data: data.prices,
+                        borderColor: isPositive ? '#10b981' : '#ef4444',
+                        backgroundColor: isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: isPositive ? '#10b981' : '#ef4444',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#fff',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#6366f1',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: false,
+                            callbacks: {
+                                label: (context) => `$${context.parsed.y.toFixed(2)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: { 
+                                color: '#94a3b8',
+                                font: { size: 10 },
+                                callback: v => '$' + v.toFixed(0)
+                            },
+                            grid: { color: 'rgba(148, 163, 184, 0.1)' }
+                        },
+                        x: {
+                            ticks: { 
+                                color: '#94a3b8',
+                                font: { size: 9 }
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayPopupStats(data, ticker) {
+            const statsEl = document.getElementById('popup-stats');
+            const isPositive = parseFloat(data.change) >= 0;
+            const stock = stockRef[ticker];
+
+            statsEl.innerHTML = `
+                <div class="bg-slate-800/50 rounded-lg p-2">
+                    <p class="text-[9px] text-slate-500 uppercase font-black">Cambio 7D</p>
+                    <p class="text-sm font-black ${isPositive ? 'text-emerald-400' : 'text-rose-400'}">
+                        ${isPositive ? '+' : ''}${data.change}%
+                    </p>
+                </div>
+                <div class="bg-slate-800/50 rounded-lg p-2">
+                    <p class="text-[9px] text-slate-500 uppercase font-black">Máximo</p>
+                    <p class="text-sm font-black text-indigo-400">$${data.high.toFixed(2)}</p>
+                </div>
+                <div class="bg-slate-800/50 rounded-lg p-2">
+                    <p class="text-[9px] text-slate-500 uppercase font-black">Mínimo</p>
+                    <p class="text-sm font-black text-amber-400">$${data.low.toFixed(2)}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "Realtime Currency Exchange Rate": {
+    "1. From_Currency Code": "USDT",
+    "2. From_Currency Name": "Tether",
+    "3. To_Currency Code": "USD",
+    "4. To_Currency Name": "United States Dollar",
+    "5. Exchange Rate": "0.99955000",
+    "6. Last Refreshed": "2026-01-04 11:44:54",
+    "7. Time Zone": "UTC",
+    "8. Bid Price": "0.99953700",
+    "9. Ask Price": "0.99956700"
+  }
+}
