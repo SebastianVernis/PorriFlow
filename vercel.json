@@ -1,44 +1,25 @@
 {
   "version": 2,
-  "name": "sv-portfolio-dashboard",
-  "builds": [
+  "rewrites": [
     {
-      "src": "public/**",
-      "use": "@vercel/static"
+      "source": "/",
+      "destination": "/public/login.html"
     },
     {
-      "src": "assets/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/public/login.html"
+      "source": "/login",
+      "destination": "/public/login.html"
     },
     {
-      "src": "/login",
-      "dest": "/public/login.html"
+      "source": "/dashboard",
+      "destination": "/public/index.html"
     },
     {
-      "src": "/dashboard",
-      "dest": "/public/index.html"
+      "source": "/legacy/v2.8",
+      "destination": "/public/legacy-v2.8.html"
     },
     {
-      "src": "/legacy/v2.8",
-      "dest": "/public/legacy-v2.8.html"
-    },
-    {
-      "src": "/legacy/v3.0",
-      "dest": "/public/legacy-v3.0.html"
-    },
-    {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/legacy/v3.0",
+      "destination": "/public/legacy-v3.0.html"
     }
   ],
   "headers": [
@@ -63,5 +44,7 @@
         }
       ]
     }
-  ]
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
 }
