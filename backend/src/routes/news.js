@@ -4,7 +4,7 @@
  */
 
 import express from 'express';
-import { authenticate } from '../middleware/auth.js';
+import { authMiddleware } from '../middleware/auth.js';
 import newsService from '../services/news-service.js';
 
 const router = express.Router();
@@ -13,7 +13,7 @@ const router = express.Router();
  * GET /api/news/:symbol
  * Get news for a specific symbol
  */
-router.get('/:symbol', authenticate, async (req, res) => {
+router.get('/:symbol', authMiddleware, async (req, res) => {
     try {
         const { symbol } = req.params;
         const { limit = 20, sources } = req.query;
@@ -40,7 +40,7 @@ router.get('/:symbol', authenticate, async (req, res) => {
  * POST /api/news/batch
  * Get news for multiple symbols
  */
-router.post('/batch', authenticate, async (req, res) => {
+router.post('/batch', authMiddleware, async (req, res) => {
     try {
         const { symbols, limit = 10 } = req.body;
         
@@ -82,7 +82,7 @@ router.post('/batch', authenticate, async (req, res) => {
  * GET /api/news/portfolio/:portfolioId
  * Get news for all positions in a portfolio
  */
-router.get('/portfolio/:portfolioId', authenticate, async (req, res) => {
+router.get('/portfolio/:portfolioId', authMiddleware, async (req, res) => {
     try {
         const { portfolioId } = req.params;
         const { limit = 5 } = req.query;

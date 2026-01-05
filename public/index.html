@@ -24,6 +24,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Authentication Module -->
     <script type="module" src="../assets/js/auth.js"></script>
+    <!-- News Module -->
+    <script type="module" src="../assets/js/news.js"></script>
     <style>
         .glass-card {
             background: rgba(255, 255, 255, 0.9);
@@ -130,6 +132,9 @@
             </button>
             <button onclick="switchTab('comparison')" id="tab-comparison" class="px-4 py-2 rounded-xl font-bold text-xs whitespace-nowrap transition-all hover:bg-slate-50">
                 <i class="fa-solid fa-code-compare mr-1"></i>Comparar
+            </button>
+            <button onclick="switchTab('news')" id="tab-news" class="px-4 py-2 rounded-xl font-bold text-xs whitespace-nowrap transition-all hover:bg-slate-50">
+                <i class="fa-solid fa-newspaper mr-1"></i>Noticias
             </button>
         </div>
 
@@ -359,6 +364,32 @@
                 <h3 class="font-black text-slate-700 uppercase text-xs mb-4">Comparación Visual</h3>
                 <div class="h-80">
                     <canvas id="portfolio-comparison-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT: News -->
+        <div id="content-news" class="tab-content hidden">
+            <div class="glass-card p-6 rounded-2xl shadow-sm mb-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="font-black text-slate-700 uppercase text-xs mb-1">
+                            <i class="fa-solid fa-newspaper text-indigo-600 mr-2"></i>Noticias Financieras
+                        </h3>
+                        <p class="text-xs text-slate-500">Últimas noticias de tu portafolio</p>
+                    </div>
+                    <button onclick="refreshPortfolioNews()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all">
+                        <i class="fa-solid fa-rotate mr-1"></i>Actualizar
+                    </button>
+                </div>
+                
+                <div id="portfolio-news-feed">
+                    <div class="flex items-center justify-center p-12">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                            <p class="text-sm text-slate-500 font-bold">Cargando noticias...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2298,6 +2329,7 @@ NO incluyas texto adicional, SOLO el JSON.`;
             if (tabName === 'projections') setTimeout(updateAllProjections, 100);
             if (tabName === 'risk') setTimeout(updateRiskCharts, 100);
             if (tabName === 'comparison') setTimeout(updateComparisonView, 100);
+            if (tabName === 'news') setTimeout(loadPortfolioNews, 100);
         }
 
         // ===== SETTINGS MANAGEMENT =====
@@ -2798,6 +2830,219 @@ NO incluyas texto adicional, SOLO el JSON.`;
             });
             
             return stats;
+        }
+
+        // ===== NEWS FUNCTIONS =====
+        
+        async function loadPortfolioNews() {
+            const container = document.getElementById('portfolio-news-feed');
+            if (!container) return;
+            
+            // Show loading
+            container.innerHTML = `
+                <div class="flex items-center justify-center p-12">
+                    <div class="text-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                        <p class="text-sm text-slate-500 font-bold">Cargando noticias...</p>
+                    </div>
+                </div>
+            `;
+            
+            try {
+                // Import news module
+                const newsModule = await import('../assets/js/news.js');
+                
+                // Get portfolio symbols
+                const symbols = [...new Set(portfolio.map(p => p.ticker))];
+                
+                if (symbols.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center p-12 text-slate-500">
+                            <i class="fa-solid fa-newspaper text-5xl mb-4 opacity-50"></i>
+                            <p class="font-bold text-lg mb-2">No hay posiciones en el portafolio</p>
+                            <p class="text-sm">Agrega activos para ver noticias relacionadas</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Fetch news for each symbol (limited to first 5 to avoid rate limits)
+                const limitedSymbols = symbols.slice(0, 5);
+                const newsResults = await newsModule.getBatchNews(limitedSymbols, 3);
+                
+                // Combine all news
+                const allNews = [];
+                Object.entries(newsResults).forEach(([symbol, articles]) => {
+                    articles.forEach(article => {
+                        allNews.push({ ...article, symbol });
+                    });
+                });
+                
+                if (allNews.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center p-12 text-slate-500">
+                            <i class="fa-solid fa-newspaper text-5xl mb-4 opacity-50"></i>
+                            <p class="font-bold text-lg mb-2">No hay noticias disponibles</p>
+                            <p class="text-sm">Las noticias se actualizan periódicamente en segundo plano</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Sort by date
+                allNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+                
+                // Group by symbol
+                const newsBySymbol = {};
+                allNews.forEach(article => {
+                    if (!newsBySymbol[article.symbol]) {
+                        newsBySymbol[article.symbol] = [];
+                    }
+                    newsBySymbol[article.symbol].push(article);
+                });
+                
+                // Render sections
+                let html = '';
+                Object.entries(newsBySymbol).forEach(([symbol, articles]) => {
+                    html += `
+                        <div class="mb-8">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <span class="bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-mono">${symbol}</span>
+                                <span class="text-sm text-slate-500 font-normal">${articles.length} ${articles.length === 1 ? 'artículo' : 'artículos'}</span>
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                ${articles.map(article => renderNewsCard(article)).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                if (symbols.length > 5) {
+                    html += `
+                        <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                            <p class="text-sm text-amber-800">
+                                <i class="fa-solid fa-info-circle mr-2"></i>
+                                Mostrando noticias de los primeros 5 símbolos de tu portafolio.
+                                Total de símbolos: ${symbols.length}
+                            </p>
+                        </div>
+                    `;
+                }
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading news:', error);
+                container.innerHTML = `
+                    <div class="text-center p-12 text-rose-500">
+                        <i class="fa-solid fa-exclamation-triangle text-5xl mb-4 opacity-50"></i>
+                        <p class="font-bold text-lg mb-2">Error al cargar noticias</p>
+                        <p class="text-sm">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderNewsCard(article) {
+            const publishedDate = new Date(article.publishedAt);
+            const timeAgo = getTimeAgo(publishedDate);
+            
+            const sentimentBadge = article.sentiment ? 
+                `<span class="px-2 py-1 rounded-full text-xs font-bold ${getSentimentClass(article.sentiment)}">
+                    ${article.sentiment === 'positive' ? '📈' : article.sentiment === 'negative' ? '📉' : '➖'} 
+                    ${article.sentiment}
+                </span>` : '';
+            
+            const thumbnail = article.thumbnail ? 
+                `<img src="${article.thumbnail}" alt="${article.title}" class="w-full h-32 object-cover rounded-t-xl" onerror="this.style.display='none'">` : '';
+            
+            return `
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-slate-200 overflow-hidden">
+                    ${thumbnail}
+                    <div class="p-4">
+                        <div class="flex items-start justify-between gap-2 mb-2">
+                            <h3 class="font-bold text-sm text-slate-800 line-clamp-2 flex-1">
+                                ${escapeHtml(article.title)}
+                            </h3>
+                            ${sentimentBadge}
+                        </div>
+                        
+                        ${article.summary ? `
+                            <p class="text-xs text-slate-600 mb-3 line-clamp-2">${escapeHtml(article.summary)}</p>
+                        ` : ''}
+                        
+                        <div class="flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2 text-slate-500">
+                                <span class="font-semibold">${escapeHtml(article.publisher)}</span>
+                                <span>•</span>
+                                <span>${timeAgo}</span>
+                            </div>
+                            <a href="${article.url}" target="_blank" rel="noopener noreferrer" 
+                               class="text-indigo-600 hover:text-indigo-700 font-bold">
+                                Leer →
+                            </a>
+                        </div>
+                        
+                        <div class="mt-2 pt-2 border-t border-slate-100">
+                            <span class="text-[10px] text-slate-400 uppercase font-bold">
+                                ${getSourceIcon(article.source)} ${article.source}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            const intervals = {
+                año: 31536000,
+                mes: 2592000,
+                semana: 604800,
+                día: 86400,
+                hora: 3600,
+                minuto: 60
+            };
+            
+            for (const [name, secondsInInterval] of Object.entries(intervals)) {
+                const interval = Math.floor(seconds / secondsInInterval);
+                if (interval >= 1) {
+                    return `hace ${interval} ${name}${interval > 1 ? 's' : ''}`;
+                }
+            }
+            
+            return 'hace un momento';
+        }
+        
+        function getSentimentClass(sentiment) {
+            const classes = {
+                positive: 'bg-emerald-100 text-emerald-700',
+                negative: 'bg-rose-100 text-rose-700',
+                neutral: 'bg-slate-100 text-slate-600'
+            };
+            return classes[sentiment] || classes.neutral;
+        }
+        
+        function getSourceIcon(source) {
+            const icons = {
+                yahoo: '📊',
+                finnhub: '📈',
+                sec: '🏛️',
+                cryptopanic: '₿',
+                default: '📰'
+            };
+            return icons[source] || icons.default;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        async function refreshPortfolioNews() {
+            await loadPortfolioNews();
         }
     </script>
 </body>
