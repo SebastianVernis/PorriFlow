@@ -22,6 +22,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Authentication Module -->
+    <script type="module" src="../assets/js/auth.js"></script>
     <style>
         .glass-card {
             background: rgba(255, 255, 255, 0.9);
@@ -99,6 +101,9 @@
                     <span id="update-timer" class="text-[10px] uppercase font-black text-indigo-300 tracking-widest">Next Refresh: 5:00</span>
                     <span id="cache-status" class="text-[9px] text-slate-500 font-mono">Cargando precios...</span>
                     <span id="api-source" class="text-[8px] text-indigo-400 font-mono mt-0.5">🚀 Marketstack API</span>
+                </div>
+                <div id="user-display" class="hidden md:flex items-center text-sm mr-2">
+                    <span class="text-slate-400">Cargando...</span>
                 </div>
                 <button onclick="openAIPortfolioBuilder()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 px-4 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-lg shadow-purple-500/30 mr-2">
                     <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>AI Portfolio
