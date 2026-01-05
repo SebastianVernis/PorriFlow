@@ -147,6 +147,40 @@ async function main() {
     console.log('   Email: admin@svportfolio.com');
     console.log('   Password: admin123456');
 
+    // Create PorritoDeFlow user
+    const porritoPassword = await bcrypt.hash('Chispaeslaverga1', 10);
+    
+    const porritoUser = await prisma.user.upsert({
+        where: { email: 'porrito@flow.com' },
+        update: {},
+        create: {
+            email: 'porrito@flow.com',
+            username: 'PorritoDeFlow',
+            password: porritoPassword,
+            name: 'Porrito De Flow',
+            portfolios: {
+                create: {
+                    name: 'Portafolio Principal',
+                    isDefault: true
+                }
+            },
+            settings: {
+                create: {
+                    riskFreeRate: 4.5,
+                    marketVolatility: 15.0,
+                    annualTarget: 20.0,
+                    refreshInterval: 5,
+                    currency: 'USD'
+                }
+            }
+        }
+    });
+
+    console.log('✅ PorritoDeFlow user created:');
+    console.log('   Email: porrito@flow.com');
+    console.log('   Username: PorritoDeFlow');
+    console.log('   Password: Chispaeslaverga1');
+
     console.log('\n🎉 Seeding complete!');
 }
 
