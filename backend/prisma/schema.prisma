@@ -23,6 +23,7 @@ model User {
   // Relations
   portfolios Portfolio[]
   settings   UserSettings?
+  newsPreferences UserNewsPreference?
   
   @@map("users")
 }
@@ -133,4 +134,55 @@ model HistoricalData {
   @@unique([ticker, date])
   @@index([ticker])
   @@map("historical_data")
+}
+
+// News Articles
+model News {
+  id           String   @id @default(cuid())
+  ticker       String
+  
+  // Article Data
+  title        String
+  summary      String?
+  url          String   @unique
+  source       String   // yahoo, finnhub, sec, cryptopanic
+  publisher    String?
+  thumbnail    String?
+  
+  // Classification
+  type         String   @default("article") // article, filing, earnings, dividend, merger
+  category     String?  // earnings, dividends, merger, acquisition, regulation, market
+  sentiment    String?  // positive, negative, neutral
+  
+  // Timestamps
+  publishedAt  DateTime
+  fetchedAt    DateTime @default(now())
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([ticker])
+  @@index([publishedAt])
+  @@index([type])
+  @@index([category])
+  @@map("news")
+}
+
+// User News Preferences
+model UserNewsPreference {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Notification Settings
+  enablePush     Boolean  @default(true)
+  minSentiment   String?  // Only notify on positive/negative
+  categories     String[] // Filter by categories
+  tickers        String[] // Specific tickers to watch
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@unique([userId])
+  @@map("user_news_preferences")
 }

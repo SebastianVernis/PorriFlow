@@ -22,16 +22,22 @@
     "data:update": "node scripts/update-prices.js",
     "data:full": "npm run data:generate && npm run data:update"
   },
-  "keywords": ["portfolio", "investment", "dashboard", "api"],
+  "keywords": [
+    "portfolio",
+    "investment",
+    "dashboard",
+    "api"
+  ],
   "author": "Sebastian Vernis",
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
-    "dotenv": "^16.4.5"
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "prisma": "^5.22.0"

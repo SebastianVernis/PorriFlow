@@ -24,6 +24,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Authentication Module -->
     <script type="module" src="../assets/js/auth.js"></script>
+    <!-- WebSocket Module -->
+    <script type="module" src="../assets/js/websocket.js"></script>
     <!-- News Module -->
     <script type="module" src="../assets/js/news.js"></script>
     <style>
@@ -371,16 +373,34 @@
         <!-- TAB CONTENT: News -->
         <div id="content-news" class="tab-content hidden">
             <div class="glass-card p-6 rounded-2xl shadow-sm mb-6">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
                     <div>
                         <h3 class="font-black text-slate-700 uppercase text-xs mb-1">
                             <i class="fa-solid fa-newspaper text-indigo-600 mr-2"></i>Noticias Financieras
+                            <span id="ws-status" class="ml-2 text-[9px] px-2 py-1 rounded-full bg-slate-200 text-slate-600">Conectando...</span>
                         </h3>
                         <p class="text-xs text-slate-500">Últimas noticias de tu portafolio</p>
                     </div>
-                    <button onclick="refreshPortfolioNews()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all">
-                        <i class="fa-solid fa-rotate mr-1"></i>Actualizar
-                    </button>
+                    <div class="flex gap-2 flex-wrap">
+                        <!-- Filtros -->
+                        <select id="news-type-filter" onchange="applyNewsFilters()" class="bg-slate-100 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-bold">
+                            <option value="">Todos los tipos</option>
+                            <option value="article">Artículos</option>
+                            <option value="earnings">Earnings</option>
+                            <option value="dividend">Dividendos</option>
+                            <option value="filing">Filings</option>
+                            <option value="merger">Fusiones/Adq.</option>
+                        </select>
+                        <select id="news-sentiment-filter" onchange="applyNewsFilters()" class="bg-slate-100 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-bold">
+                            <option value="">Todos los sentimientos</option>
+                            <option value="positive">📈 Positivo</option>
+                            <option value="negative">📉 Negativo</option>
+                            <option value="neutral">➖ Neutral</option>
+                        </select>
+                        <button onclick="refreshPortfolioNews()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all">
+                            <i class="fa-solid fa-rotate mr-1"></i>Actualizar
+                        </button>
+                    </div>
                 </div>
                 
                 <div id="portfolio-news-feed">
@@ -2889,12 +2909,24 @@ NO incluyas texto adicional, SOLO el JSON.`;
                     return;
                 }
                 
+                // Apply filters
+                const typeFilter = document.getElementById('news-type-filter')?.value;
+                const sentimentFilter = document.getElementById('news-sentiment-filter')?.value;
+                
+                let filteredNews = allNews;
+                if (typeFilter) {
+                    filteredNews = filteredNews.filter(n => n.type === typeFilter);
+                }
+                if (sentimentFilter) {
+                    filteredNews = filteredNews.filter(n => n.sentiment === sentimentFilter);
+                }
+                
                 // Sort by date
-                allNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+                filteredNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
                 
                 // Group by symbol
                 const newsBySymbol = {};
-                allNews.forEach(article => {
+                filteredNews.forEach(article => {
                     if (!newsBySymbol[article.symbol]) {
                         newsBySymbol[article.symbol] = [];
                     }
@@ -3043,6 +3075,99 @@ NO incluyas texto adicional, SOLO el JSON.`;
         
         async function refreshPortfolioNews() {
             await loadPortfolioNews();
+        }
+        
+        async function applyNewsFilters() {
+            await loadPortfolioNews();
+        }
+        
+        // ===== WEBSOCKET INTEGRATION =====
+        
+        // Initialize WebSocket listeners
+        if (window.wsClient) {
+            // Update connection status
+            wsClient.on('connected', () => {
+                const statusEl = document.getElementById('ws-status');
+                if (statusEl) {
+                    statusEl.textContent = '🟢 En línea';
+                    statusEl.className = 'ml-2 text-[9px] px-2 py-1 rounded-full bg-emerald-100 text-emerald-700';
+                }
+            });
+            
+            wsClient.on('disconnected', () => {
+                const statusEl = document.getElementById('ws-status');
+                if (statusEl) {
+                    statusEl.textContent = '🔴 Desconectado';
+                    statusEl.className = 'ml-2 text-[9px] px-2 py-1 rounded-full bg-rose-100 text-rose-700';
+                }
+            });
+            
+            // Handle news notifications
+            wsClient.on('news', (data) => {
+                console.log('📰 Nueva noticia recibida:', data);
+                
+                // Show toast notification
+                showNotification('📰 Nuevas noticias disponibles', data.message || 'Actualiza para verlas');
+                
+                // Auto-refresh if on news tab
+                const newsTab = document.getElementById('content-news');
+                if (newsTab && !newsTab.classList.contains('hidden')) {
+                    setTimeout(() => loadPortfolioNews(), 2000);
+                }
+            });
+            
+            // Handle price updates
+            wsClient.on('price_update', (data) => {
+                console.log('💰 Actualización de precios:', data);
+                // Update prices in portfolio
+                updatePricesFromWebSocket(data);
+            });
+            
+            // Handle custom notifications
+            wsClient.on('notification', (data) => {
+                console.log('🔔 Notificación:', data);
+                showNotification(data.title || 'Notificación', data.message);
+            });
+        }
+        
+        function showNotification(title, message) {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-20 right-4 bg-white border-l-4 border-indigo-600 rounded-xl shadow-xl p-4 z-[100] animate-slide-in max-w-sm';
+            toast.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-sm text-slate-800 mb-1">${escapeHtml(title)}</h4>
+                        <p class="text-xs text-slate-600">${escapeHtml(message)}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+        
+        function updatePricesFromWebSocket(priceData) {
+            // Update portfolio positions with new prices
+            if (Array.isArray(priceData)) {
+                priceData.forEach(update => {
+                    const item = portfolio.find(p => p.ticker === update.symbol);
+                    if (item) {
+                        item.currentPrice = update.price;
+                    }
+                });
+                
+                // Refresh dashboard
+                renderDashboard();
+                updateAllVisualizations();
+            }
         }
     </script>
 </body>

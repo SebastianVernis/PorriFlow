@@ -1,4 +1,7 @@
 import jwt from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const authMiddleware = (req, res, next) => {
     try {
@@ -13,6 +16,7 @@ export const authMiddleware = (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.userId = decoded.userId;
         req.email = decoded.email;
+        req.prisma = prisma;
         
         next();
     } catch (error) {

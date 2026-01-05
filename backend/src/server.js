@@ -1,4 +1,5 @@
 import express from 'express';
+import { createServer } from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
@@ -8,6 +9,7 @@ import newsRoutes from './routes/news.js';
 import { authMiddleware } from './middleware/auth.js';
 import scheduler from './services/background-scheduler.js';
 import newsService from './services/news-service.js';
+import wsService from './services/websocket-service.js';
 
 dotenv.config();
 
@@ -46,12 +48,19 @@ app.use('*', (req, res) => {
     res.status(404).json({ error: 'Endpoint not found' });
 });
 
+// Create HTTP server (needed for WebSocket)
+const server = createServer(app);
+
+// Initialize WebSocket
+wsService.initialize(server);
+
 // Start server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`🚀 SV Portfolio API v3.0`);
     console.log(`📡 Server running on port ${PORT}`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`✅ Ready to accept connections\n`);
+    console.log(`✅ Ready to accept connections`);
+    console.log(`🔌 WebSocket available at ws://localhost:${PORT}/ws\n`);
     
     // Initialize background jobs
     initializeBackgroundJobs();
@@ -73,7 +82,18 @@ function initializeBackgroundJobs() {
         'news-update-popular',
         async () => {
             const popularSymbols = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA', 'BTC-USD', 'ETH-USD'];
-            await newsService.updateNewsForSymbols(popularSymbols, { limit: 10 });
+            const results = await newsService.updateNewsForSymbols(popularSymbols, { limit: 10 });
+            
+            // Notify connected users about new articles
+            if (results.totalArticles > 0) {
+                const connectedUsers = wsService.getConnectedUsers();
+                if (connectedUsers.length > 0) {
+                    wsService.broadcastNews(connectedUsers, {
+                        message: `${results.totalArticles} nuevas noticias disponibles`,
+                        symbols: popularSymbols
+                    });
+                }
+            }
         },
         30 * 60 * 1000, // 30 minutes
         { enabled: true, runOnStart: false }

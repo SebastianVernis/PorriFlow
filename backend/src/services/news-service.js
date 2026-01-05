@@ -252,32 +252,144 @@ export async function getNewsForSymbol(symbol, options = {}) {
 }
 
 /**
- * Cache news in database
+ * Classify news article type and category
  */
-export async function cacheNewsForSymbol(symbol, news) {
-    try {
-        // Store in a simple JSON field or create a News table
-        // For now, using PriceCache table's unused fields as temporary storage
-        
-        const cacheKey = `news_${symbol}`;
-        
-        await prisma.priceCache.upsert({
-            where: { ticker: cacheKey },
-            create: {
-                ticker: cacheKey,
-                price: 0,
-                source: 'news_cache',
-                timestamp: new Date()
-            },
-            update: {
-                timestamp: new Date()
-            }
-        });
-        
-        console.log(`   ✓ Cached ${news.length} articles for ${symbol}`);
-    } catch (error) {
-        console.error(`Failed to cache news for ${symbol}:`, error.message);
+function classifyNews(article) {
+    const title = article.title.toLowerCase();
+    const summary = (article.summary || '').toLowerCase();
+    const content = `${title} ${summary}`;
+    
+    // Detect type
+    let type = 'article';
+    let category = null;
+    
+    // Filing detection
+    if (article.source === 'sec' || content.includes('8-k') || content.includes('10-k') || content.includes('10-q')) {
+        type = 'filing';
+        category = 'regulation';
     }
+    
+    // Earnings detection
+    if (content.match(/\b(earnings|quarter|q\d|fiscal|revenue|profit)\b/)) {
+        type = 'earnings';
+        category = 'earnings';
+    }
+    
+    // Dividend detection
+    if (content.match(/\b(dividend|payout|yield|distribution)\b/)) {
+        type = 'dividend';
+        category = 'dividends';
+    }
+    
+    // Merger/Acquisition detection
+    if (content.match(/\b(merger|acquisition|acquire|buyout|takeover|m&a)\b/)) {
+        type = 'merger';
+        category = 'merger';
+    }
+    
+    // Market movement detection
+    if (content.match(/\b(surge|plunge|rally|crash|volatile|jump|fall|rise|drop)\b/)) {
+        category = category || 'market';
+    }
+    
+    return { type, category };
+}
+
+/**
+ * Save news to database
+ */
+export async function saveNewsToDatabase(symbol, news) {
+    if (!Array.isArray(news) || news.length === 0) {
+        return { saved: 0, skipped: 0 };
+    }
+    
+    let saved = 0;
+    let skipped = 0;
+    
+    for (const article of news) {
+        try {
+            const { type, category } = classifyNews(article);
+            
+            await prisma.news.upsert({
+                where: { url: article.url },
+                create: {
+                    ticker: symbol,
+                    title: article.title,
+                    summary: article.summary || null,
+                    url: article.url,
+                    source: article.source,
+                    publisher: article.publisher || null,
+                    thumbnail: article.thumbnail || null,
+                    type,
+                    category,
+                    sentiment: article.sentiment || null,
+                    publishedAt: article.publishedAt,
+                    fetchedAt: new Date()
+                },
+                update: {
+                    sentiment: article.sentiment || null,
+                    fetchedAt: new Date()
+                }
+            });
+            
+            saved++;
+        } catch (error) {
+            // Likely duplicate URL, skip
+            skipped++;
+        }
+    }
+    
+    console.log(`   ✓ Saved ${saved} articles, skipped ${skipped} duplicates for ${symbol}`);
+    return { saved, skipped };
+}
+
+/**
+ * Get news from database with filters
+ */
+export async function getNewsFromDatabase(options = {}) {
+    const {
+        ticker,
+        tickers,
+        type,
+        category,
+        sentiment,
+        limit = 20,
+        offset = 0,
+        since
+    } = options;
+    
+    const where = {};
+    
+    if (ticker) {
+        where.ticker = ticker;
+    } else if (tickers && Array.isArray(tickers)) {
+        where.ticker = { in: tickers };
+    }
+    
+    if (type) {
+        where.type = type;
+    }
+    
+    if (category) {
+        where.category = category;
+    }
+    
+    if (sentiment) {
+        where.sentiment = sentiment;
+    }
+    
+    if (since) {
+        where.publishedAt = { gte: new Date(since) };
+    }
+    
+    const news = await prisma.news.findMany({
+        where,
+        orderBy: { publishedAt: 'desc' },
+        take: limit,
+        skip: offset
+    });
+    
+    return news;
 }
 
 /**
@@ -297,9 +409,9 @@ export async function updateNewsForSymbols(symbols, options = {}) {
             const news = await getNewsForSymbol(symbol, options);
             
             if (news.length > 0) {
-                await cacheNewsForSymbol(symbol, news);
+                const { saved } = await saveNewsToDatabase(symbol, news);
                 results.success++;
-                results.totalArticles += news.length;
+                results.totalArticles += saved;
             }
             
             // Rate limiting: wait between requests
@@ -321,6 +433,7 @@ export async function updateNewsForSymbols(symbols, options = {}) {
 
 export default {
     getNewsForSymbol,
-    cacheNewsForSymbol,
+    saveNewsToDatabase,
+    getNewsFromDatabase,
     updateNewsForSymbols
 };
