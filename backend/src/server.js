@@ -6,9 +6,11 @@ import authRoutes from './routes/auth.js';
 import portfolioRoutes from './routes/portfolios.js';
 import settingsRoutes from './routes/settings.js';
 import newsRoutes from './routes/news.js';
+import marketDataRoutes from './routes/market-data.js';
 import { authMiddleware } from './middleware/auth.js';
 import scheduler from './services/background-scheduler.js';
 import newsService from './services/news-service.js';
+import marketDataService from './services/market-data-service.js';
 import wsService from './services/websocket-service.js';
 
 dotenv.config();
@@ -33,6 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/portfolios', authMiddleware, portfolioRoutes);
 app.use('/api/settings', authMiddleware, settingsRoutes);
 app.use('/api/news', authMiddleware, newsRoutes);
+app.use('/api/market-data', authMiddleware, marketDataRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {
@@ -123,7 +126,67 @@ function initializeBackgroundJobs() {
         { enabled: true, runOnStart: false }
     );
     
-    // Job 3: Price cache cleanup (every 24 hours)
+    // Job 3: Download historical data for tracked symbols (every 24 hours)
+    scheduler.register(
+        'historical-data-download',
+        async () => {
+            const { PrismaClient } = await import('@prisma/client');
+            const prisma = new PrismaClient();
+            
+            // Get all unique tickers from positions
+            const positions = await prisma.position.findMany({
+                select: { ticker: true },
+                distinct: ['ticker']
+            });
+            
+            const symbols = positions.map(p => p.ticker);
+            
+            if (symbols.length > 0) {
+                // Download last 30 days of data
+                const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
+                const now = Math.floor(Date.now() / 1000);
+                
+                await marketDataService.batchDownloadHistoricalData(symbols, {
+                    period1: thirtyDaysAgo,
+                    period2: now,
+                    interval: '1d'
+                });
+            }
+            
+            await prisma.$disconnect();
+        },
+        24 * 60 * 60 * 1000, // 24 hours
+        { enabled: true, runOnStart: false }
+    );
+    
+    // Job 4: Price cache update (every 5 minutes during market hours)
+    scheduler.register(
+        'price-cache-update',
+        async () => {
+            const { PrismaClient } = await import('@prisma/client');
+            const prisma = new PrismaClient();
+            
+            // Get most active positions
+            const positions = await prisma.position.findMany({
+                select: { ticker: true },
+                distinct: ['ticker'],
+                take: 50 // Top 50 most used symbols
+            });
+            
+            const symbols = positions.map(p => p.ticker);
+            
+            for (const symbol of symbols) {
+                await marketDataService.updatePriceCache(symbol);
+                await new Promise(r => setTimeout(r, 500)); // Rate limit
+            }
+            
+            await prisma.$disconnect();
+        },
+        5 * 60 * 1000, // 5 minutes
+        { enabled: true, runOnStart: false }
+    );
+    
+    // Job 5: Cache cleanup (every 24 hours)
     scheduler.register(
         'cache-cleanup',
         async () => {
