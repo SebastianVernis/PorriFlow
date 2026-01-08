@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SV Portfolio Manager v3.0 Unified | AI Analysis + Multi-Portfolio</title>
     <!-- Tailwind CSS (compiled) -->
-    <link rel="stylesheet" href="../assets/css/output.css">
+    <link rel="stylesheet" href="/assets/css/output.css">
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Authentication Module -->
-    <script type="module" src="../assets/js/auth.js"></script>
+    <script type="module" src="/assets/js/auth.js"></script>
     <!-- WebSocket Module -->
-    <script type="module" src="../assets/js/websocket.js"></script>
+    <script type="module" src="/assets/js/websocket.js"></script>
     <!-- News Module -->
-    <script type="module" src="../assets/js/news.js"></script>
+    <script type="module" src="/assets/js/news.js"></script>
     <style>
         .ai-pulse {
             animation: pulse-indigo 2s infinite;
@@ -2818,7 +2818,7 @@ NO incluyas texto adicional, SOLO el JSON.`;
             
             try {
                 // Import news module
-                const newsModule = await import('../assets/js/news.js');
+                const newsModule = await import('/assets/js/news.js');
                 
                 // Get portfolio symbols
                 const symbols = [...new Set(portfolio.map(p => p.ticker))];

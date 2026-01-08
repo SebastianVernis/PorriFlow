@@ -27,6 +27,7 @@ dist/
 build/
 .next/
 out/
+package-lock.json
 
 # Vercel
 .vercel
