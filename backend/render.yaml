@@ -17,7 +17,7 @@ services:
       - key: PORT
         value: 3000
       - key: ALLOWED_ORIGINS
-        value: https://sv-portfolio.vercel.app,https://sv-portfolio-*.vercel.app
+        value: https://sv-portfolio-dashboard.vercel.app,https://sv-portfolio-*.vercel.app
       - key: SESSION_EXPIRY
         value: 7d
     healthCheckPath: /health
