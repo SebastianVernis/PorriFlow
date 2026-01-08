@@ -924,12 +924,16 @@
             
             const stillMissing = [];
             
-            // Finnhub permite 60 llamadas/minuto (free tier)
-            // Procesar en paralelo con rate limiting
-            const batchSize = 30; // 30 llamadas por lote
+            // Separar stocks de crypto (Finnhub usa diferentes endpoints)
+            const cryptoSymbols = missingTickers.filter(t => t.includes('-USD'));
+            const stockSymbols = missingTickers.filter(t => !t.includes('-USD'));
             
-            for (let i = 0; i < missingTickers.length; i += batchSize) {
-                const batch = missingTickers.slice(i, i + batchSize);
+            // Finnhub permite 60 llamadas/minuto (free tier)
+            const batchSize = 30;
+            
+            // Procesar stocks
+            for (let i = 0; i < stockSymbols.length; i += batchSize) {
+                const batch = stockSymbols.slice(i, i + batchSize);
                 
                 const results = await Promise.allSettled(
                     batch.map(async ticker => {
@@ -937,13 +941,11 @@
                             const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${FINNHUB_API_KEY}`);
                             const data = await res.json();
                             
-                            // Finnhub devuelve: {c: current_price, h: high, l: low, o: open, pc: previous_close}
                             if (data.c && data.c > 0) {
                                 cachedPrices.prices[ticker] = parseFloat(data.c);
                                 console.log(`✓ Finnhub ${ticker}: $${data.c.toFixed(2)}`);
                                 return { ticker, success: true };
                             } else {
-                                console.warn(`⚠️ Finnhub ${ticker}: Sin datos`);
                                 return { ticker, success: false };
                             }
                         } catch (e) {
@@ -953,7 +955,6 @@
                     })
                 );
                 
-                // Recopilar símbolos que aún faltan
                 results.forEach((result, idx) => {
                     if (result.status === 'fulfilled' && !result.value.success) {
                         stillMissing.push(batch[idx]);
@@ -962,12 +963,54 @@
                     }
                 });
                 
-                // Guardar progreso
                 localStorage.setItem('sv_cached_prices', JSON.stringify(cachedPrices));
                 updateCacheStatus();
                 
-                // Rate limiting: esperar 1 segundo entre lotes
-                if (i + batchSize < missingTickers.length) {
+                if (i + batchSize < stockSymbols.length) {
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+            }
+            
+            // Procesar crypto con formato Finnhub: BINANCE:BTCUSDT
+            for (let i = 0; i < cryptoSymbols.length; i += batchSize) {
+                const batch = cryptoSymbols.slice(i, i + batchSize);
+                
+                const results = await Promise.allSettled(
+                    batch.map(async ticker => {
+                        try {
+                            // Convertir BTC-USD a BINANCE:BTCUSDT para Finnhub
+                            const cryptoBase = ticker.replace('-USD', '');
+                            const finnhubSymbol = `BINANCE:${cryptoBase}USDT`;
+                            
+                            const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${finnhubSymbol}&token=${FINNHUB_API_KEY}`);
+                            const data = await res.json();
+                            
+                            if (data.c && data.c > 0) {
+                                cachedPrices.prices[ticker] = parseFloat(data.c);
+                                console.log(`✓ Finnhub Crypto ${ticker}: $${data.c.toFixed(2)}`);
+                                return { ticker, success: true };
+                            } else {
+                                return { ticker, success: false };
+                            }
+                        } catch (e) {
+                            console.error(`❌ Finnhub crypto error ${ticker}:`, e);
+                            return { ticker, success: false };
+                        }
+                    })
+                );
+                
+                results.forEach((result, idx) => {
+                    if (result.status === 'fulfilled' && !result.value.success) {
+                        stillMissing.push(batch[idx]);
+                    } else if (result.status === 'rejected') {
+                        stillMissing.push(batch[idx]);
+                    }
+                });
+                
+                localStorage.setItem('sv_cached_prices', JSON.stringify(cachedPrices));
+                updateCacheStatus();
+                
+                if (i + batchSize < cryptoSymbols.length) {
                     await new Promise(r => setTimeout(r, 1000));
                 }
             }

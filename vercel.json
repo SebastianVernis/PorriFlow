@@ -20,6 +20,10 @@
     {
       "source": "/legacy/v3.0",
       "destination": "/public/legacy-v3.0.html"
+    },
+    {
+      "source": "/assets/(.*)",
+      "destination": "/public/assets/$1"
     }
   ],
   "headers": [

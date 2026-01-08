@@ -1,0 +1,1015 @@
+// Auto-generated market data - 2026-01-04T22:25:55.789Z
+// Updated: 92/107 symbols
+
+export const MARKET_DATA = {
+  "AAPL": {
+    "name": "Apple Inc.",
+    "sector": "Tecnología",
+    "beta": 1.24,
+    "yield": 0.5,
+    "dgr": 7.5,
+    "price": 271.01,
+    "lastUpdate": "2026-01-04T22:23:59.066Z"
+  },
+  "MSFT": {
+    "name": "Microsoft Corp.",
+    "sector": "Tecnología",
+    "beta": 0.89,
+    "yield": 0.8,
+    "dgr": 10.2,
+    "price": 472.94,
+    "lastUpdate": "2026-01-04T22:23:59.913Z"
+  },
+  "GOOGL": {
+    "name": "Alphabet Inc.",
+    "sector": "Tecnología",
+    "beta": 1.05,
+    "yield": 0,
+    "dgr": 0,
+    "price": 315.15,
+    "lastUpdate": "2026-01-04T22:24:00.614Z"
+  },
+  "META": {
+    "name": "Meta Platforms",
+    "sector": "Tecnología",
+    "beta": 1.18,
+    "yield": 0,
+    "dgr": 0,
+    "price": 650.41,
+    "lastUpdate": "2026-01-04T22:24:01.319Z"
+  },
+  "NVDA": {
+    "name": "NVIDIA Corp.",
+    "sector": "Tecnología/AI",
+    "beta": 1.68,
+    "yield": 0.03,
+    "dgr": 15.2,
+    "price": 188.85,
+    "lastUpdate": "2026-01-04T22:24:02.259Z"
+  },
+  "TSLA": {
+    "name": "Tesla Inc.",
+    "sector": "Tecnología/Auto",
+    "beta": 2.01,
+    "yield": 0,
+    "dgr": 0,
+    "price": 438.07,
+    "lastUpdate": "2026-01-04T22:24:02.980Z"
+  },
+  "AMD": {
+    "name": "Advanced Micro Devices",
+    "sector": "Tecnología",
+    "beta": 1.82,
+    "yield": 0,
+    "dgr": 0,
+    "price": 223.47,
+    "lastUpdate": "2026-01-04T22:24:03.806Z"
+  },
+  "INTC": {
+    "name": "Intel Corp.",
+    "sector": "Tecnología",
+    "beta": 0.68,
+    "yield": 1.5,
+    "dgr": 2.8,
+    "price": 39.38,
+    "lastUpdate": "2026-01-04T22:24:04.838Z"
+  },
+  "CSCO": {
+    "name": "Cisco Systems",
+    "sector": "Tecnología",
+    "beta": 0.92,
+    "yield": 3,
+    "dgr": 3.2,
+    "price": 76.04,
+    "lastUpdate": "2026-01-04T22:24:05.854Z"
+  },
+  "ORCL": {
+    "name": "Oracle Corp.",
+    "sector": "Tecnología",
+    "beta": 0.88,
+    "yield": 1.3,
+    "dgr": 14.5,
+    "price": 195.71,
+    "lastUpdate": "2026-01-04T22:24:07.101Z"
+  },
+  "IBM": {
+    "name": "IBM Corp.",
+    "sector": "Tecnología",
+    "beta": 0.72,
+    "yield": 4.8,
+    "dgr": 1.2,
+    "price": 291.5,
+    "lastUpdate": "2026-01-04T22:24:08.890Z"
+  },
+  "CRM": {
+    "name": "Salesforce Inc.",
+    "sector": "Tecnología",
+    "beta": 1.15,
+    "yield": 0,
+    "dgr": 0,
+    "price": 253.62,
+    "lastUpdate": "2026-01-04T22:24:10.138Z"
+  },
+  "AVGO": {
+    "name": "Broadcom Inc.",
+    "sector": "Tecnología/AI",
+    "beta": 1.15,
+    "yield": 1.4,
+    "dgr": 18.5,
+    "price": 347.62,
+    "lastUpdate": "2026-01-04T22:24:11.068Z"
+  },
+  "ADBE": {
+    "name": "Adobe Inc.",
+    "sector": "Tecnología",
+    "beta": 1.22,
+    "yield": 0,
+    "dgr": 0,
+    "price": 333.3,
+    "lastUpdate": "2026-01-04T22:24:12.194Z"
+  },
+  "NFLX": {
+    "name": "Netflix Inc.",
+    "sector": "Tecnología/Media",
+    "beta": 1.35,
+    "yield": 0,
+    "dgr": 0,
+    "price": 90.99,
+    "lastUpdate": "2026-01-04T22:24:13.022Z"
+  },
+  "JNJ": {
+    "name": "Johnson & Johnson",
+    "sector": "Salud",
+    "beta": 0.54,
+    "yield": 3,
+    "dgr": 5.8,
+    "price": 207.35,
+    "lastUpdate": "2026-01-04T22:24:14.248Z"
+  },
+  "ABBV": {
+    "name": "AbbVie Inc.",
+    "sector": "Salud",
+    "beta": 0.58,
+    "yield": 3.4,
+    "dgr": 12.4,
+    "price": 229.31,
+    "lastUpdate": "2026-01-04T22:24:15.171Z"
+  },
+  "PFE": {
+    "name": "Pfizer Inc.",
+    "sector": "Salud",
+    "beta": 0.62,
+    "yield": 5.8,
+    "dgr": 5.5,
+    "price": 25.18,
+    "lastUpdate": "2026-01-04T22:24:15.983Z"
+  },
+  "UNH": {
+    "name": "UnitedHealth Group",
+    "sector": "Salud",
+    "beta": 0.75,
+    "yield": 1.3,
+    "dgr": 12.8,
+    "price": 336.4,
+    "lastUpdate": "2026-01-04T22:24:16.908Z"
+  },
+  "MRK": {
+    "name": "Merck & Co.",
+    "sector": "Salud",
+    "beta": 0.48,
+    "yield": 2.8,
+    "dgr": 7.2,
+    "price": 106.45,
+    "lastUpdate": "2026-01-04T22:24:17.782Z"
+  },
+  "LLY": {
+    "name": "Eli Lilly and Co.",
+    "sector": "Salud",
+    "beta": 0.52,
+    "yield": 1.5,
+    "dgr": 15.3,
+    "price": 1080.36,
+    "lastUpdate": "2026-01-04T22:24:18.864Z"
+  },
+  "BMY": {
+    "name": "Bristol Myers Squibb",
+    "sector": "Salud",
+    "beta": 0.55,
+    "yield": 4.5,
+    "dgr": 2.5,
+    "price": 53.46,
+    "lastUpdate": "2026-01-04T22:24:19.677Z"
+  },
+  "AMGN": {
+    "name": "Amgen Inc.",
+    "sector": "Salud",
+    "beta": 0.68,
+    "yield": 3.2,
+    "dgr": 10.2,
+    "price": 327.64,
+    "lastUpdate": "2026-01-04T22:24:20.411Z"
+  },
+  "JPM": {
+    "name": "JPMorgan Chase",
+    "sector": "Finanzas",
+    "beta": 1.12,
+    "yield": 2.4,
+    "dgr": 8.5,
+    "price": 325.48,
+    "lastUpdate": "2026-01-04T22:24:21.183Z"
+  },
+  "BAC": {
+    "name": "Bank of America",
+    "sector": "Finanzas",
+    "beta": 1.25,
+    "yield": 2.8,
+    "dgr": 7.2,
+    "price": 55.95,
+    "lastUpdate": "2026-01-04T22:24:21.929Z"
+  },
+  "WFC": {
+    "name": "Wells Fargo",
+    "sector": "Finanzas",
+    "beta": 1.18,
+    "yield": 2.6,
+    "dgr": 6.5,
+    "price": 95.2,
+    "lastUpdate": "2026-01-04T22:24:22.692Z"
+  },
+  "GS": {
+    "name": "Goldman Sachs",
+    "sector": "Finanzas",
+    "beta": 1.32,
+    "yield": 2.3,
+    "dgr": 9.8,
+    "price": 914.34,
+    "lastUpdate": "2026-01-04T22:24:23.381Z"
+  },
+  "MS": {
+    "name": "Morgan Stanley",
+    "sector": "Finanzas",
+    "beta": 1.28,
+    "yield": 3.1,
+    "dgr": 8.2,
+    "price": 181.9,
+    "lastUpdate": "2026-01-04T22:24:24.282Z"
+  },
+  "V": {
+    "name": "Visa Inc.",
+    "sector": "Finanzas",
+    "beta": 0.95,
+    "yield": 0.7,
+    "dgr": 17.5,
+    "price": 346.48,
+    "lastUpdate": "2026-01-04T22:24:25.823Z"
+  },
+  "MA": {
+    "name": "Mastercard Inc.",
+    "sector": "Finanzas",
+    "beta": 1.02,
+    "yield": 0.5,
+    "dgr": 18.2,
+    "price": 563.13,
+    "lastUpdate": "2026-01-04T22:24:27.087Z"
+  },
+  "PYPL": {
+    "name": "PayPal Holdings",
+    "sector": "Finanzas",
+    "beta": 1.42,
+    "yield": 0,
+    "dgr": 0,
+    "price": 58.14,
+    "lastUpdate": "2026-01-04T22:24:28.484Z"
+  },
+  "AMZN": {
+    "name": "Amazon.com Inc.",
+    "sector": "Consumo/Tech",
+    "beta": 1.15,
+    "yield": 0,
+    "dgr": 0,
+    "price": 226.5,
+    "lastUpdate": "2026-01-04T22:24:30.011Z"
+  },
+  "WMT": {
+    "name": "Walmart Inc.",
+    "sector": "Retail",
+    "beta": 0.51,
+    "yield": 1.5,
+    "dgr": 9.2,
+    "price": 112.76,
+    "lastUpdate": "2026-01-04T22:24:32.573Z"
+  },
+  "HD": {
+    "name": "Home Depot",
+    "sector": "Retail",
+    "beta": 0.98,
+    "yield": 2.3,
+    "dgr": 11.5,
+    "price": 345.82,
+    "lastUpdate": "2026-01-04T22:24:33.413Z"
+  },
+  "COST": {
+    "name": "Costco Wholesale",
+    "sector": "Retail",
+    "beta": 0.68,
+    "yield": 0.6,
+    "dgr": 13.5,
+    "price": 854.5,
+    "lastUpdate": "2026-01-04T22:24:34.084Z"
+  },
+  "PG": {
+    "name": "Procter & Gamble",
+    "sector": "Consumo",
+    "beta": 0.45,
+    "yield": 2.5,
+    "dgr": 5.5,
+    "price": 141.79,
+    "lastUpdate": "2026-01-04T22:24:35.334Z"
+  },
+  "KO": {
+    "name": "Coca-Cola Company",
+    "sector": "Consumo",
+    "beta": 0.59,
+    "yield": 3.1,
+    "dgr": 4,
+    "price": 69.12,
+    "lastUpdate": "2026-01-04T22:24:36.071Z"
+  },
+  "PEP": {
+    "name": "PepsiCo Inc.",
+    "sector": "Consumo",
+    "beta": 0.52,
+    "yield": 2.9,
+    "dgr": 7.2,
+    "price": 142.23,
+    "lastUpdate": "2026-01-04T22:24:37.081Z"
+  },
+  "MCD": {
+    "name": "McDonald's Corp.",
+    "sector": "Consumo",
+    "beta": 0.63,
+    "yield": 2.2,
+    "dgr": 7.8,
+    "price": 303.26,
+    "lastUpdate": "2026-01-04T22:24:38.421Z"
+  },
+  "NKE": {
+    "name": "Nike Inc.",
+    "sector": "Consumo",
+    "beta": 1.02,
+    "yield": 1.4,
+    "dgr": 11.5,
+    "price": 63.28,
+    "lastUpdate": "2026-01-04T22:24:39.560Z"
+  },
+  "SBUX": {
+    "name": "Starbucks Corp.",
+    "sector": "Consumo",
+    "beta": 0.82,
+    "yield": 2.1,
+    "dgr": 12.2,
+    "price": 83.97,
+    "lastUpdate": "2026-01-04T22:24:40.248Z"
+  },
+  "XOM": {
+    "name": "Exxon Mobil",
+    "sector": "Energía",
+    "beta": 1.02,
+    "yield": 3.6,
+    "dgr": 3.8,
+    "price": 122.65,
+    "lastUpdate": "2026-01-04T22:24:41.492Z"
+  },
+  "CVX": {
+    "name": "Chevron Corp.",
+    "sector": "Energía",
+    "beta": 0.95,
+    "yield": 3.4,
+    "dgr": 6.2,
+    "price": 155.9,
+    "lastUpdate": "2026-01-04T22:24:44.104Z"
+  },
+  "COP": {
+    "name": "ConocoPhillips",
+    "sector": "Energía",
+    "beta": 1.15,
+    "yield": 2.8,
+    "dgr": 8.5,
+    "price": 96.7,
+    "lastUpdate": "2026-01-04T22:24:45.066Z"
+  },
+  "SLB": {
+    "name": "Schlumberger",
+    "sector": "Energía",
+    "beta": 1.42,
+    "yield": 2.4,
+    "dgr": 5.2,
+    "price": 40.2,
+    "lastUpdate": "2026-01-04T22:24:45.881Z"
+  },
+  "BA": {
+    "name": "Boeing Company",
+    "sector": "Industrial",
+    "beta": 1.35,
+    "yield": 0,
+    "dgr": 0,
+    "price": 227.77,
+    "lastUpdate": "2026-01-04T22:24:46.604Z"
+  },
+  "CAT": {
+    "name": "Caterpillar Inc.",
+    "sector": "Industrial",
+    "beta": 1.18,
+    "yield": 2.1,
+    "dgr": 6.5,
+    "price": 598.41,
+    "lastUpdate": "2026-01-04T22:24:48.165Z"
+  },
+  "GE": {
+    "name": "General Electric",
+    "sector": "Industrial",
+    "beta": 1.08,
+    "yield": 0.8,
+    "dgr": 4.2,
+    "price": 320.75,
+    "lastUpdate": "2026-01-04T22:24:49.275Z"
+  },
+  "MMM": {
+    "name": "3M Company",
+    "sector": "Industrial",
+    "beta": 0.92,
+    "yield": 5.8,
+    "dgr": 1.5,
+    "price": 161.82,
+    "lastUpdate": "2026-01-04T22:24:50.082Z"
+  },
+  "HON": {
+    "name": "Honeywell International",
+    "sector": "Industrial",
+    "beta": 1.05,
+    "yield": 2,
+    "dgr": 6.8,
+    "price": 195.88,
+    "lastUpdate": "2026-01-04T22:24:51.698Z"
+  },
+  "NEE": {
+    "name": "NextEra Energy",
+    "sector": "Utilities",
+    "beta": 0.48,
+    "yield": 2.8,
+    "dgr": 10.5,
+    "price": 80.93,
+    "lastUpdate": "2026-01-04T22:24:52.574Z"
+  },
+  "DUK": {
+    "name": "Duke Energy",
+    "sector": "Utilities",
+    "beta": 0.35,
+    "yield": 4.2,
+    "dgr": 2.2,
+    "price": 117.44,
+    "lastUpdate": "2026-01-04T22:24:53.667Z"
+  },
+  "SO": {
+    "name": "Southern Company",
+    "sector": "Utilities",
+    "beta": 0.38,
+    "yield": 3.8,
+    "dgr": 3.5,
+    "price": 87.18,
+    "lastUpdate": "2026-01-04T22:24:54.482Z"
+  },
+  "D": {
+    "name": "Dominion Energy",
+    "sector": "Utilities",
+    "beta": 0.42,
+    "yield": 5.1,
+    "dgr": 2.8,
+    "price": 59.24,
+    "lastUpdate": "2026-01-04T22:24:55.312Z"
+  },
+  "AMT": {
+    "name": "American Tower",
+    "sector": "REIT",
+    "beta": 0.58,
+    "yield": 3.2,
+    "dgr": 9.2,
+    "price": 174.8,
+    "lastUpdate": "2026-01-04T22:24:56.127Z"
+  },
+  "PLD": {
+    "name": "Prologis Inc.",
+    "sector": "REIT",
+    "beta": 0.82,
+    "yield": 3.1,
+    "dgr": 8.5,
+    "price": 129.05,
+    "lastUpdate": "2026-01-04T22:24:56.844Z"
+  },
+  "O": {
+    "name": "Realty Income",
+    "sector": "REIT",
+    "beta": 0.82,
+    "yield": 5.5,
+    "dgr": 3.5,
+    "price": 57.31,
+    "lastUpdate": "2026-01-04T22:24:57.661Z"
+  },
+  "SPG": {
+    "name": "Simon Property Group",
+    "sector": "REIT",
+    "beta": 1.15,
+    "yield": 5.2,
+    "dgr": 2.8,
+    "price": 183.97,
+    "lastUpdate": "2026-01-04T22:24:58.377Z"
+  },
+  "T": {
+    "name": "AT&T Inc.",
+    "sector": "Telecomunicaciones",
+    "beta": 0.68,
+    "yield": 7.2,
+    "dgr": -0.5,
+    "price": 24.56,
+    "lastUpdate": "2026-01-04T22:24:59.196Z"
+  },
+  "VZ": {
+    "name": "Verizon Communications",
+    "sector": "Telecomunicaciones",
+    "beta": 0.42,
+    "yield": 6.5,
+    "dgr": 2.1,
+    "price": 40.52,
+    "lastUpdate": "2026-01-04T22:24:59.910Z"
+  },
+  "TMUS": {
+    "name": "T-Mobile US",
+    "sector": "Telecomunicaciones",
+    "beta": 0.58,
+    "yield": 1.8,
+    "dgr": 0,
+    "price": 199.58,
+    "lastUpdate": "2026-01-04T22:25:00.732Z"
+  },
+  "LIN": {
+    "name": "Linde plc",
+    "sector": "Materiales",
+    "beta": 0.88,
+    "yield": 1.4,
+    "dgr": 8.5,
+    "price": 429.11,
+    "lastUpdate": "2026-01-04T22:25:02.330Z"
+  },
+  "APD": {
+    "name": "Air Products & Chemicals",
+    "sector": "Materiales",
+    "beta": 0.82,
+    "yield": 2.3,
+    "dgr": 9.2,
+    "price": 250.47,
+    "lastUpdate": "2026-01-04T22:25:03.076Z"
+  },
+  "^GSPC": {
+    "name": "S&P 500",
+    "sector": "Index",
+    "beta": 1,
+    "yield": 1.5,
+    "dgr": 0,
+    "price": 6858.47,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:04.491Z"
+  },
+  "^DJI": {
+    "name": "Dow Jones Industrial",
+    "sector": "Index",
+    "beta": 1,
+    "yield": 2,
+    "dgr": 0,
+    "price": 48382.39,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:05.262Z"
+  },
+  "^IXIC": {
+    "name": "NASDAQ Composite",
+    "sector": "Index",
+    "beta": 1.15,
+    "yield": 0.8,
+    "dgr": 0,
+    "price": 23235.629,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:06.011Z"
+  },
+  "^RUT": {
+    "name": "Russell 2000",
+    "sector": "Index",
+    "beta": 1.25,
+    "yield": 1.3,
+    "dgr": 0,
+    "price": 2508.223,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:06.778Z"
+  },
+  "^VIX": {
+    "name": "Volatility Index",
+    "sector": "Index",
+    "beta": -0.5,
+    "yield": 0,
+    "dgr": 0,
+    "price": 14.51,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:07.711Z"
+  },
+  "^FTSE": {
+    "name": "FTSE 100",
+    "sector": "Index",
+    "beta": 0.85,
+    "yield": 3.5,
+    "dgr": 0,
+    "price": 9951.14,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:09.339Z"
+  },
+  "^GDAXI": {
+    "name": "DAX",
+    "sector": "Index",
+    "beta": 1.1,
+    "yield": 2.8,
+    "dgr": 0,
+    "price": 24539.34,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:09.998Z"
+  },
+  "^N225": {
+    "name": "Nikkei 225",
+    "sector": "Index",
+    "beta": 0.95,
+    "yield": 1.8,
+    "dgr": 0,
+    "price": 50339.48,
+    "isIndex": true,
+    "lastUpdate": "2026-01-04T22:25:10.691Z"
+  },
+  "BTC-USD": {
+    "name": "Bitcoin",
+    "sector": "Crypto",
+    "beta": 2.5,
+    "yield": 0,
+    "dgr": 0,
+    "price": 91197,
+    "isCrypto": true,
+    "lastUpdate": "2026-01-04T22:25:13.372Z"
+  },
+  "ETH-USD": {
+    "name": "Ethereum",
+    "sector": "Crypto",
+    "beta": 2.8,
+    "yield": 0,
+    "dgr": 0,
+    "price": 3140.31,
+    "isCrypto": true,
+    "lastUpdate": "2026-01-04T22:25:15.717Z"
+  },
+  "BNB-USD": {
+    "name": "Binance Coin",
+    "sector": "Crypto",
+    "beta": 3.2,
+    "yield": 0,
+    "dgr": 0,
+    "price": 893.08,
+    "isCrypto": true,
+    "lastUpdate": "2026-01-04T22:25:17.895Z"
+  },
+  "XRP-USD": {
+    "name": "Ripple",
+    "sector": "Crypto",
+    "beta": 3.4,
+    "yield": 0,
+    "dgr": 0,
+    "price": 2.09,
+    "isCrypto": true,
+    "lastUpdate": "2026-01-04T22:25:20.147Z"
+  },
+  "ADA-USD": {
+    "name": "Cardano",
+    "sector": "Crypto",
+    "beta": 3.5,
+    "yield": 0,
+    "dgr": 0,
+    "price": 0.399309,
+    "isCrypto": true,
+    "lastUpdate": "2026-01-04T22:25:22.523Z"
+  },
+  "SOL-USD": {
+    "name": "Solana",
+    "sector": "Crypto",
+    "beta": 3.8,
+    "yield": 0,
+    "dgr": 0,
+    "price": 98.45,
+    "isCrypto": true
+  },
+  "DOT-USD": {
+    "name": "Polkadot",
+    "sector": "Crypto",
+    "beta": 3.4,
+    "yield": 0,
+    "dgr": 0,
+    "price": 7.23,
+    "isCrypto": true
+  },
+  "DOGE-USD": {
+    "name": "Dogecoin",
+    "sector": "Crypto",
+    "beta": 4,
+    "yield": 0,
+    "dgr": 0,
+    "price": 0.089,
+    "isCrypto": true
+  },
+  "MATIC-USD": {
+    "name": "Polygon",
+    "sector": "Crypto",
+    "beta": 3.6,
+    "yield": 0,
+    "dgr": 0,
+    "price": 0.92,
+    "isCrypto": true
+  },
+  "AVAX-USD": {
+    "name": "Avalanche",
+    "sector": "Crypto",
+    "beta": 3.7,
+    "yield": 0,
+    "dgr": 0,
+    "price": 38.92,
+    "isCrypto": true
+  },
+  "LINK-USD": {
+    "name": "Chainlink",
+    "sector": "Crypto",
+    "beta": 3.3,
+    "yield": 0,
+    "dgr": 0,
+    "price": 15.67,
+    "isCrypto": true
+  },
+  "UNI-USD": {
+    "name": "Uniswap",
+    "sector": "Crypto",
+    "beta": 3.5,
+    "yield": 0,
+    "dgr": 0,
+    "price": 6.78,
+    "isCrypto": true
+  },
+  "SPY": {
+    "name": "SPDR S&P 500 ETF",
+    "sector": "ETF/Index",
+    "beta": 1,
+    "yield": 1.5,
+    "dgr": 0,
+    "price": 683.17,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:39.336Z"
+  },
+  "QQQ": {
+    "name": "Invesco QQQ Trust",
+    "sector": "ETF/Tech",
+    "beta": 1.15,
+    "yield": 0.6,
+    "dgr": 0,
+    "price": 613.12,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:40.029Z"
+  },
+  "DIA": {
+    "name": "SPDR Dow Jones ETF",
+    "sector": "ETF/Index",
+    "beta": 1,
+    "yield": 2,
+    "dgr": 0,
+    "price": 483.63,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:40.771Z"
+  },
+  "IWM": {
+    "name": "iShares Russell 2000",
+    "sector": "ETF/SmallCap",
+    "beta": 1.25,
+    "yield": 1.3,
+    "dgr": 0,
+    "price": 248.78,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:41.792Z"
+  },
+  "VTI": {
+    "name": "Vanguard Total Stock",
+    "sector": "ETF/Total",
+    "beta": 1,
+    "yield": 1.4,
+    "dgr": 0,
+    "price": 336.31,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:42.416Z"
+  },
+  "VOO": {
+    "name": "Vanguard S&P 500",
+    "sector": "ETF/Index",
+    "beta": 1,
+    "yield": 1.5,
+    "dgr": 0,
+    "price": 628.3,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:43.025Z"
+  },
+  "GLD": {
+    "name": "SPDR Gold Trust",
+    "sector": "ETF/Commodity",
+    "beta": 0.1,
+    "yield": 0,
+    "dgr": 0,
+    "price": 398.28,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:43.677Z"
+  },
+  "SLV": {
+    "name": "iShares Silver Trust",
+    "sector": "ETF/Commodity",
+    "beta": 0.3,
+    "yield": 0,
+    "dgr": 0,
+    "price": 65.75,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:44.385Z"
+  },
+  "USO": {
+    "name": "US Oil Fund",
+    "sector": "ETF/Commodity",
+    "beta": 1.8,
+    "yield": 0,
+    "dgr": 0,
+    "price": 68.96,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:45.031Z"
+  },
+  "TLT": {
+    "name": "iShares 20Y Treasury",
+    "sector": "ETF/Bonds",
+    "beta": -0.3,
+    "yield": 4.5,
+    "dgr": 0,
+    "price": 87.03,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:45.738Z"
+  },
+  "ARKK": {
+    "name": "ARK Innovation ETF",
+    "sector": "ETF/Innovation",
+    "beta": 1.8,
+    "yield": 0,
+    "dgr": 0,
+    "price": 78.31,
+    "isETF": true,
+    "lastUpdate": "2026-01-04T22:25:46.399Z"
+  },
+  "GC=F": {
+    "name": "Gold Futures",
+    "sector": "Commodity/Precious",
+    "beta": 0.1,
+    "yield": 0,
+    "dgr": 0,
+    "price": 2063.5,
+    "isFutures": true
+  },
+  "SI=F": {
+    "name": "Silver Futures",
+    "sector": "Commodity/Precious",
+    "beta": 0.3,
+    "yield": 0,
+    "dgr": 0,
+    "price": 24.12,
+    "isFutures": true
+  },
+  "CL=F": {
+    "name": "Crude Oil WTI",
+    "sector": "Commodity/Energy",
+    "beta": 1.5,
+    "yield": 0,
+    "dgr": 0,
+    "price": 73.42,
+    "isFutures": true
+  },
+  "NG=F": {
+    "name": "Natural Gas",
+    "sector": "Commodity/Energy",
+    "beta": 2,
+    "yield": 0,
+    "dgr": 0,
+    "price": 2.89,
+    "isFutures": true
+  },
+  "HG=F": {
+    "name": "Copper Futures",
+    "sector": "Commodity/Industrial",
+    "beta": 1.2,
+    "yield": 0,
+    "dgr": 0,
+    "price": 3.85,
+    "isFutures": true
+  },
+  "ZC=F": {
+    "name": "Corn Futures",
+    "sector": "Commodity/Agriculture",
+    "beta": 0.8,
+    "yield": 0,
+    "dgr": 0,
+    "price": 4.67,
+    "isFutures": true
+  },
+  "ZW=F": {
+    "name": "Wheat Futures",
+    "sector": "Commodity/Agriculture",
+    "beta": 0.9,
+    "yield": 0,
+    "dgr": 0,
+    "price": 6.12,
+    "isFutures": true
+  },
+  "ZS=F": {
+    "name": "Soybean Futures",
+    "sector": "Commodity/Agriculture",
+    "beta": 0.85,
+    "yield": 0,
+    "dgr": 0,
+    "price": 12.45,
+    "isFutures": true
+  },
+  "EURUSD=X": {
+    "name": "EUR/USD",
+    "sector": "Forex",
+    "beta": 0.3,
+    "yield": 0,
+    "dgr": 0,
+    "price": 1.1725,
+    "isForex": true,
+    "lastUpdate": "2026-01-04T22:25:53.194Z"
+  },
+  "GBPUSD=X": {
+    "name": "GBP/USD",
+    "sector": "Forex",
+    "beta": 0.4,
+    "yield": 0,
+    "dgr": 0,
+    "price": 1.3459,
+    "isForex": true,
+    "lastUpdate": "2026-01-04T22:25:53.824Z"
+  },
+  "USDJPY=X": {
+    "name": "USD/JPY",
+    "sector": "Forex",
+    "beta": 0.3,
+    "yield": 0,
+    "dgr": 0,
+    "price": 156.757,
+    "isForex": true,
+    "lastUpdate": "2026-01-04T22:25:54.518Z"
+  },
+  "AUDUSD=X": {
+    "name": "AUD/USD",
+    "sector": "Forex",
+    "beta": 0.5,
+    "yield": 0,
+    "dgr": 0,
+    "price": 0.6691,
+    "isForex": true,
+    "lastUpdate": "2026-01-04T22:25:55.164Z"
+  },
+  "USDCAD=X": {
+    "name": "USD/CAD",
+    "sector": "Forex",
+    "beta": 0.3,
+    "yield": 0,
+    "dgr": 0,
+    "price": 1.3736,
+    "isForex": true,
+    "lastUpdate": "2026-01-04T22:25:55.788Z"
+  }
+};
+
+export const METADATA = {
+  "generated": "2026-01-04T22:25:55.788Z",
+  "source": "Multiple public sources",
+  "disclaimer": "Datos informativos. Verificar antes de operar.",
+  "version": "3.0",
+  "totalSymbols": 107,
+  "categories": {
+    "stocks": 63,
+    "indices": 8,
+    "crypto": 12,
+    "etfs": 11,
+    "futures": 8,
+    "forex": 5
+  },
+  "lastPriceUpdate": "2026-01-04T22:25:55.788Z",
+  "updatedSymbols": 92
+};
