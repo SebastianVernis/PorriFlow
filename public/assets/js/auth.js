@@ -3,7 +3,7 @@
  * Handles login state and API communication
  */
 
-const API_BASE_URL = localStorage.getItem('sv_api_url') || 'http://localhost:3000';
+const API_BASE_URL = localStorage.getItem('sv_api_url') || 'https://sv-portfolio-api.onrender.com';
 
 // Check authentication
 export function checkAuth() {
