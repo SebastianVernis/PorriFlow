@@ -829,7 +829,7 @@
                 return;
             }
 
-            console.log('🚀 Precargando precios con Marketstack API...');
+            console.log('🚀 Precargando precios con Finnhub API...');
             console.log(`Cargando ${tickers.length} símbolos en paralelo...`);
             
             // Preservar precios antiguos si existen
@@ -838,75 +838,115 @@
                 prices: cachedPrices.prices || {} 
             };
             
-            // Marketstack permite múltiples símbolos en una llamada (hasta 100)
-            const batchSize = 50; // Cargar 50 símbolos por request
+            // Separar stocks de crypto
+            const cryptoSymbols = tickers.filter(t => t.includes('-USD'));
+            const stockSymbols = tickers.filter(t => !t.includes('-USD'));
+            
+            // Finnhub permite 60 llamadas/minuto (free tier), usar batches más pequeños
+            const batchSize = 30;
             let successCount = 0;
             let failCount = 0;
             
-            for (let i = 0; i < tickers.length; i += batchSize) {
-                const batch = tickers.slice(i, i + batchSize);
-                const tickerString = batch.join(',');
+            // Procesar stocks
+            for (let i = 0; i < stockSymbols.length; i += batchSize) {
+                const batch = stockSymbols.slice(i, i + batchSize);
                 
-                console.log(`📊 Lote ${Math.floor(i/batchSize) + 1}/${Math.ceil(tickers.length/batchSize)}: ${batch.length} símbolos`);
+                console.log(`📊 Stocks Lote ${Math.floor(i/batchSize) + 1}/${Math.ceil(stockSymbols.length/batchSize)}: ${batch.length} símbolos`);
                 
-                try {
-                    // Marketstack endpoint para datos en tiempo real (latest)
-                    const res = await fetch(
-                        `https://api.marketstack.com/v1/eod/latest?access_key=${MARKETSTACK_API_KEY}&symbols=${tickerString}&limit=1`
-                    );
-                    const data = await res.json();
-                    
-                    if (data.error) {
-                        console.error(`❌ Error API Marketstack:`, data.error.message);
-                        failCount += batch.length;
-                        continue;
-                    }
-                    
-                    if (data.data && Array.isArray(data.data)) {
-                        data.data.forEach(quote => {
-                            const ticker = quote.symbol;
-                            const price = quote.close || quote.open; // Usar close o open si close no disponible
+                const results = await Promise.allSettled(
+                    batch.map(async ticker => {
+                        try {
+                            const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${FINNHUB_API_KEY}`);
+                            const data = await res.json();
                             
-                            if (price) {
-                                newCache.prices[ticker] = parseFloat(price);
-                                successCount++;
-                                console.log(`✓ ${ticker}: $${price.toFixed(2)}`);
+                            if (data.c && data.c > 0) {
+                                newCache.prices[ticker] = parseFloat(data.c);
+                                console.log(`✓ ${ticker}: $${data.c.toFixed(2)}`);
+                                return { ticker, success: true };
                             } else {
-                                failCount++;
-                                console.warn(`⚠️ ${ticker}: Sin precio disponible`);
+                                return { ticker, success: false };
                             }
-                        });
+                        } catch (e) {
+                            console.error(`❌ Finnhub error ${ticker}:`, e);
+                            return { ticker, success: false };
+                        }
+                    })
+                );
+                
+                results.forEach(result => {
+                    if (result.status === 'fulfilled' && result.value.success) {
+                        successCount++;
+                    } else {
+                        failCount++;
                     }
-                    
-                    // Guardar progreso después de cada lote
-                    cachedPrices = newCache;
-                    localStorage.setItem('sv_cached_prices', JSON.stringify(cachedPrices));
-                    updateCacheStatus();
-                    
-                    // Pequeña pausa entre lotes para evitar sobrecarga
-                    if (i + batchSize < tickers.length) {
-                        await new Promise(r => setTimeout(r, 1000)); // 1 segundo entre lotes
+                });
+                
+                // Guardar progreso
+                cachedPrices = newCache;
+                localStorage.setItem('sv_cached_prices', JSON.stringify(cachedPrices));
+                updateCacheStatus();
+                
+                // Pausa entre lotes para no exceder rate limit
+                if (i + batchSize < stockSymbols.length) {
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+            }
+            
+            // Procesar crypto con formato Finnhub: BINANCE:BTCUSDT
+            for (let i = 0; i < cryptoSymbols.length; i += batchSize) {
+                const batch = cryptoSymbols.slice(i, i + batchSize);
+                
+                console.log(`📊 Crypto Lote ${Math.floor(i/batchSize) + 1}/${Math.ceil(cryptoSymbols.length/batchSize)}: ${batch.length} símbolos`);
+                
+                const results = await Promise.allSettled(
+                    batch.map(async ticker => {
+                        try {
+                            const cryptoBase = ticker.replace('-USD', '');
+                            const finnhubSymbol = `BINANCE:${cryptoBase}USDT`;
+                            
+                            const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${finnhubSymbol}&token=${FINNHUB_API_KEY}`);
+                            const data = await res.json();
+                            
+                            if (data.c && data.c > 0) {
+                                newCache.prices[ticker] = parseFloat(data.c);
+                                console.log(`✓ Crypto ${ticker}: $${data.c.toFixed(2)}`);
+                                return { ticker, success: true };
+                            } else {
+                                return { ticker, success: false };
+                            }
+                        } catch (e) {
+                            console.error(`❌ Finnhub crypto error ${ticker}:`, e);
+                            return { ticker, success: false };
+                        }
+                    })
+                );
+                
+                results.forEach(result => {
+                    if (result.status === 'fulfilled' && result.value.success) {
+                        successCount++;
+                    } else {
+                        failCount++;
                     }
-                    
-                } catch (e) { 
-                    console.error(`❌ Error cargando lote:`, e);
-                    failCount += batch.length;
+                });
+                
+                // Guardar progreso
+                cachedPrices = newCache;
+                localStorage.setItem('sv_cached_prices', JSON.stringify(cachedPrices));
+                updateCacheStatus();
+                
+                if (i + batchSize < cryptoSymbols.length) {
+                    await new Promise(r => setTimeout(r, 1000));
                 }
             }
             
             console.log(`✅ Precarga completada: ${successCount} éxitos, ${failCount} fallos de ${tickers.length} totales`);
             
-            // Si hubo muchos fallos, intentar fallback en cascada: Finnhub → Alpha Vantage
-            if (failCount > tickers.length * 0.3) {
-                console.log('⚠️ Muchos fallos detectados. Iniciando fallback en cascada...');
-                const missingAfterMarketstack = tickers.filter(t => !newCache.prices[t]);
-                
-                // 1. Intentar con Finnhub (más rápido y con más llamadas disponibles)
-                const stillMissing = await fallbackToFinnhub(missingAfterMarketstack);
-                
-                // 2. Si aún faltan, usar Alpha Vantage como último recurso
-                if (stillMissing.length > 0) {
-                    await fallbackToAlphaVantage(stillMissing);
+            // Si hubo fallos, intentar Alpha Vantage como fallback
+            if (failCount > 0) {
+                const missingAfterFinnhub = tickers.filter(t => !newCache.prices[t]);
+                if (missingAfterFinnhub.length > 0) {
+                    console.log(`⚠️ Fallback: Intentando obtener ${missingAfterFinnhub.length} símbolos con Alpha Vantage...`);
+                    await fallbackToAlphaVantage(missingAfterFinnhub);
                 }
             }
         }
@@ -1106,48 +1146,82 @@
                 return;
             }
             
-            try {
-                // Intentar obtener precios con Marketstack (más rápido, batch request)
-                const tickerString = portfolioTickers.join(',');
-                const res = await fetch(
-                    `https://api.marketstack.com/v1/eod/latest?access_key=${MARKETSTACK_API_KEY}&symbols=${tickerString}&limit=1`
-                );
-                const data = await res.json();
-                
-                if (data.data && Array.isArray(data.data)) {
-                    // Actualizar precios del portafolio
-                    data.data.forEach(quote => {
-                        const portfolioItem = portfolio.find(item => item.ticker === quote.symbol);
-                        if (portfolioItem) {
-                            portfolioItem.currentPrice = parseFloat(quote.close || quote.open);
-                            // Actualizar caché también
-                            if (!cachedPrices.prices) cachedPrices.prices = {};
-                            cachedPrices.prices[quote.symbol] = portfolioItem.currentPrice;
-                        }
-                    });
-                    
-                    // Guardar caché actualizado
-                    cachedPrices.timestamp = Date.now();
-                    localStorage.setItem('sv_cached_prices', JSON.stringify(cachedPrices));
-                    
-                    console.log(`✅ Precios actualizados vía Marketstack: ${data.data.length}/${portfolioTickers.length}`);
-                } else {
-                    console.warn('⚠️ Marketstack no devolvió datos, usando caché');
-                    // Usar precios en caché
-                    portfolio.forEach(item => {
-                        if (cachedPrices.prices && cachedPrices.prices[item.ticker]) {
-                            item.currentPrice = cachedPrices.prices[item.ticker];
-                        }
-                    });
+            // Asegurar que cachedPrices.prices existe
+            if (!cachedPrices.prices) cachedPrices.prices = {};
+            
+            // Usar precios del caché primero
+            portfolio.forEach(item => {
+                if (cachedPrices.prices[item.ticker]) {
+                    item.currentPrice = cachedPrices.prices[item.ticker];
                 }
+            });
+            
+            // Actualizar precios usando Finnhub (llamadas individuales)
+            const cryptoSymbols = portfolioTickers.filter(t => t.includes('-USD'));
+            const stockSymbols = portfolioTickers.filter(t => !t.includes('-USD'));
+            
+            let updatedCount = 0;
+            
+            try {
+                // Actualizar stocks
+                const stockResults = await Promise.allSettled(
+                    stockSymbols.map(async ticker => {
+                        try {
+                            const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${FINNHUB_API_KEY}`);
+                            const data = await res.json();
+                            
+                            if (data.c && data.c > 0) {
+                                const portfolioItem = portfolio.find(item => item.ticker === ticker);
+                                if (portfolioItem) {
+                                    portfolioItem.currentPrice = parseFloat(data.c);
+                                    cachedPrices.prices[ticker] = portfolioItem.currentPrice;
+                                }
+                                return true;
+                            }
+                            return false;
+                        } catch (e) {
+                            return false;
+                        }
+                    })
+                );
+                
+                updatedCount += stockResults.filter(r => r.status === 'fulfilled' && r.value).length;
+                
+                // Actualizar crypto
+                const cryptoResults = await Promise.allSettled(
+                    cryptoSymbols.map(async ticker => {
+                        try {
+                            const cryptoBase = ticker.replace('-USD', '');
+                            const finnhubSymbol = `BINANCE:${cryptoBase}USDT`;
+                            
+                            const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${finnhubSymbol}&token=${FINNHUB_API_KEY}`);
+                            const data = await res.json();
+                            
+                            if (data.c && data.c > 0) {
+                                const portfolioItem = portfolio.find(item => item.ticker === ticker);
+                                if (portfolioItem) {
+                                    portfolioItem.currentPrice = parseFloat(data.c);
+                                    cachedPrices.prices[ticker] = portfolioItem.currentPrice;
+                                }
+                                return true;
+                            }
+                            return false;
+                        } catch (e) {
+                            return false;
+                        }
+                    })
+                );
+                
+                updatedCount += cryptoResults.filter(r => r.status === 'fulfilled' && r.value).length;
+                
+                // Guardar caché actualizado
+                cachedPrices.timestamp = Date.now();
+                localStorage.setItem('sv_cached_prices', JSON.stringify(cachedPrices));
+                
+                console.log(`✅ Precios actualizados vía Finnhub: ${updatedCount}/${portfolioTickers.length}`);
+                
             } catch (e) {
-                console.error('❌ Error actualizando precios con Marketstack:', e);
-                // Fallback: usar precios en caché
-                portfolio.forEach(item => {
-                    if (cachedPrices.prices && cachedPrices.prices[item.ticker]) {
-                        item.currentPrice = cachedPrices.prices[item.ticker];
-                    }
-                });
+                console.error('❌ Error actualizando precios:', e);
             }
             
             indicator.className = "w-2 h-2 rounded-full bg-emerald-500";
