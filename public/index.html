@@ -46,7 +46,7 @@
                 <div class="hidden md:flex flex-col items-end text-right mr-4 border-r border-slate-700 pr-4">
                     <span id="update-timer" class="text-[10px] uppercase font-black text-indigo-300 tracking-widest">Next Refresh: 5:00</span>
                     <span id="cache-status" class="text-[9px] text-slate-500 font-mono">Cargando precios...</span>
-                    <span id="api-source" class="text-[8px] text-indigo-400 font-mono mt-0.5">🚀 Marketstack API</span>
+                    <span id="api-source" class="text-[8px] text-indigo-400 font-mono mt-0.5">🚀 Multi-API (Marketstack + Finnhub)</span>
                 </div>
                 <div id="user-display" class="hidden md:flex items-center text-sm mr-2">
                     <span class="text-slate-400">Cargando...</span>
@@ -646,7 +646,8 @@
          * Author: Sebastian Vernis Environment
          * 
          * Features:
-         * - Real-time prices with Marketstack API
+         * - Real-time prices with Multi-API fallback (Marketstack → Finnhub → Alpha Vantage)
+         * - Enhanced AI analysis with Finnhub fundamentals & sentiment
          * - Historical data with hover charts
          * - AI analysis with news sentiment
          * - Weekly projection tracking
@@ -656,6 +657,7 @@
         // --- ESTRUCTURA DE API KEYS ---
         const ALPHA_VANTAGE_KEY = "CJIOJ9QSU8A2JM7R"; 
         const MARKETSTACK_API_KEY = "68b8070ec719075f3ea37d9069d4ea68";
+        const FINNHUB_API_KEY = "d5fjbopr01qnjhoclpjgd5fjbopr01qnjhoclpk0";
         const BLACKBOX_API_KEY = "sk-Vl6HBMkEaEzvj6x_qfrfhA";
         const MARKETAUX_API_KEY = ""; // Obtener en: https://www.marketaux.com/
 
@@ -894,18 +896,91 @@
             
             console.log(`✅ Precarga completada: ${successCount} éxitos, ${failCount} fallos de ${tickers.length} totales`);
             
-            // Si hubo muchos fallos, intentar fallback con Alpha Vantage para símbolos faltantes
+            // Si hubo muchos fallos, intentar fallback en cascada: Finnhub → Alpha Vantage
             if (failCount > tickers.length * 0.3) {
-                console.log('⚠️ Muchos fallos detectados. Iniciando fallback con Alpha Vantage...');
-                await fallbackToAlphaVantage(tickers.filter(t => !newCache.prices[t]));
+                console.log('⚠️ Muchos fallos detectados. Iniciando fallback en cascada...');
+                const missingAfterMarketstack = tickers.filter(t => !newCache.prices[t]);
+                
+                // 1. Intentar con Finnhub (más rápido y con más llamadas disponibles)
+                const stillMissing = await fallbackToFinnhub(missingAfterMarketstack);
+                
+                // 2. Si aún faltan, usar Alpha Vantage como último recurso
+                if (stillMissing.length > 0) {
+                    await fallbackToAlphaVantage(stillMissing);
+                }
             }
         }
         
-        // --- FALLBACK A ALPHA VANTAGE ---
+        // --- FALLBACK A FINNHUB (PRIORIDAD 1) ---
+        async function fallbackToFinnhub(missingTickers) {
+            if (missingTickers.length === 0) return missingTickers;
+            
+            console.log(`🔄 Fallback Finnhub: Obteniendo ${missingTickers.length} símbolos con Finnhub...`);
+            
+            // Asegurar que cachedPrices.prices existe
+            if (!cachedPrices.prices) {
+                cachedPrices.prices = {};
+            }
+            
+            const stillMissing = [];
+            
+            // Finnhub permite 60 llamadas/minuto (free tier)
+            // Procesar en paralelo con rate limiting
+            const batchSize = 30; // 30 llamadas por lote
+            
+            for (let i = 0; i < missingTickers.length; i += batchSize) {
+                const batch = missingTickers.slice(i, i + batchSize);
+                
+                const results = await Promise.allSettled(
+                    batch.map(async ticker => {
+                        try {
+                            const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${FINNHUB_API_KEY}`);
+                            const data = await res.json();
+                            
+                            // Finnhub devuelve: {c: current_price, h: high, l: low, o: open, pc: previous_close}
+                            if (data.c && data.c > 0) {
+                                cachedPrices.prices[ticker] = parseFloat(data.c);
+                                console.log(`✓ Finnhub ${ticker}: $${data.c.toFixed(2)}`);
+                                return { ticker, success: true };
+                            } else {
+                                console.warn(`⚠️ Finnhub ${ticker}: Sin datos`);
+                                return { ticker, success: false };
+                            }
+                        } catch (e) {
+                            console.error(`❌ Finnhub error ${ticker}:`, e);
+                            return { ticker, success: false };
+                        }
+                    })
+                );
+                
+                // Recopilar símbolos que aún faltan
+                results.forEach((result, idx) => {
+                    if (result.status === 'fulfilled' && !result.value.success) {
+                        stillMissing.push(batch[idx]);
+                    } else if (result.status === 'rejected') {
+                        stillMissing.push(batch[idx]);
+                    }
+                });
+                
+                // Guardar progreso
+                localStorage.setItem('sv_cached_prices', JSON.stringify(cachedPrices));
+                updateCacheStatus();
+                
+                // Rate limiting: esperar 1 segundo entre lotes
+                if (i + batchSize < missingTickers.length) {
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+            }
+            
+            console.log(`✅ Finnhub completado: ${missingTickers.length - stillMissing.length}/${missingTickers.length} exitosos`);
+            return stillMissing;
+        }
+        
+        // --- FALLBACK A ALPHA VANTAGE (PRIORIDAD 2) ---
         async function fallbackToAlphaVantage(missingTickers) {
             if (missingTickers.length === 0) return;
             
-            console.log(`🔄 Fallback: Obteniendo ${missingTickers.length} símbolos con Alpha Vantage...`);
+            console.log(`🔄 Fallback Alpha Vantage: Obteniendo ${missingTickers.length} símbolos...`);
             
             // Asegurar que cachedPrices.prices existe
             if (!cachedPrices.prices) {
@@ -924,12 +999,12 @@
                         
                         if (data["Global Quote"] && data["Global Quote"]["05. price"]) {
                             cachedPrices.prices[ticker] = parseFloat(data["Global Quote"]["05. price"]);
-                            console.log(`✓ Fallback ${ticker}: ${cachedPrices.prices[ticker].toFixed(2)}`);
+                            console.log(`✓ Alpha Vantage ${ticker}: ${cachedPrices.prices[ticker].toFixed(2)}`);
                         }
                         
                         await new Promise(r => setTimeout(r, 12500)); // 12.5 seg entre llamadas
                     } catch (e) { 
-                        console.error(`❌ Fallback error ${ticker}:`, e); 
+                        console.error(`❌ Alpha Vantage error ${ticker}:`, e); 
                     }
                 }
                 
@@ -1114,7 +1189,32 @@
 
         // --- OBTENER NOTICIAS DEL MERCADO ---
         async function fetchMarketNews(ticker) {
-            // Intentar primero con Marketaux si está configurado
+            // 1. PRIORIDAD: Finnhub Company News (free tier: 60 llamadas/minuto)
+            try {
+                const toDate = new Date().toISOString().split('T')[0];
+                const fromDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                
+                const res = await fetch(
+                    `https://finnhub.io/api/v1/company-news?symbol=${ticker}&from=${fromDate}&to=${toDate}&token=${FINNHUB_API_KEY}`
+                );
+                const data = await res.json();
+                
+                if (data && Array.isArray(data) && data.length > 0) {
+                    console.log(`✓ Noticias Finnhub ${ticker}: ${data.length} artículos`);
+                    return data.slice(0, 5).map(article => ({
+                        title: article.headline,
+                        description: article.summary,
+                        sentiment: article.sentiment || 0, // Finnhub no provee sentiment directamente, lo calculamos con otro endpoint
+                        published: new Date(article.datetime * 1000).toISOString(),
+                        source: article.source,
+                        url: article.url
+                    }));
+                }
+            } catch (e) {
+                console.warn('No se pudieron obtener noticias de Finnhub:', e);
+            }
+            
+            // 2. FALLBACK: Marketaux si está configurado
             if (MARKETAUX_API_KEY && MARKETAUX_API_KEY !== "") {
                 try {
                     const res = await fetch(
@@ -1135,7 +1235,7 @@
                 }
             }
             
-            // Fallback: usar Alpha Vantage News Sentiment (gratis pero limitado)
+            // 3. ÚLTIMO FALLBACK: Alpha Vantage News Sentiment (gratis pero limitado)
             try {
                 const res = await fetch(
                     `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${ALPHA_VANTAGE_KEY}&limit=3`
@@ -1156,6 +1256,57 @@
             
             return [];
         }
+        
+        // --- FINNHUB: OBTENER DATOS FUNDAMENTALES ---
+        async function fetchFinnhubFundamentals(ticker) {
+            try {
+                const res = await fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${FINNHUB_API_KEY}`);
+                const data = await res.json();
+                
+                if (data && data.ticker) {
+                    return {
+                        name: data.name,
+                        sector: data.finnhubIndustry || data.ggroup,
+                        marketCap: data.marketCapitalization,
+                        country: data.country,
+                        exchange: data.exchange,
+                        ipo: data.ipo,
+                        weburl: data.weburl,
+                        logo: data.logo,
+                        phone: data.phone
+                    };
+                }
+            } catch (e) {
+                console.warn(`No se pudieron obtener fundamentales de Finnhub para ${ticker}:`, e);
+            }
+            return null;
+        }
+        
+        // --- FINNHUB: SENTIMENT ANALYSIS (NEWS + SOCIAL) ---
+        async function fetchFinnhubSentiment(ticker) {
+            try {
+                // Obtener sentiment de noticias (último mes)
+                const res = await fetch(`https://finnhub.io/api/v1/news-sentiment?symbol=${ticker}&token=${FINNHUB_API_KEY}`);
+                const data = await res.json();
+                
+                if (data && data.sentiment) {
+                    return {
+                        buzz: data.buzz?.articlesInLastWeek || 0,
+                        weeklyAverage: data.buzz?.weeklyAverage || 0,
+                        sentiment: data.sentiment?.bearishPercent !== undefined ? 
+                            (data.sentiment.bullishPercent - data.sentiment.bearishPercent) / 100 : 0,
+                        bullishPercent: data.sentiment?.bullishPercent || 0,
+                        bearishPercent: data.sentiment?.bearishPercent || 0,
+                        companyNewsScore: data.companyNewsScore || 0,
+                        sectorAverageBullishPercent: data.sectorAverageBullishPercent || 0,
+                        sectorAverageNewsScore: data.sectorAverageNewsScore || 0
+                    };
+                }
+            } catch (e) {
+                console.warn(`No se pudo obtener sentiment de Finnhub para ${ticker}:`, e);
+            }
+            return null;
+        }
 
         // --- BLACKBOX AI AGENT INTEGRATION CON ANÁLISIS MEJORADO ---
         async function analyzeTicker(ticker) {
@@ -1168,21 +1319,41 @@
             openAIModal(ticker, null, true);
 
             try {
-                // Obtener datos históricos del cache o API
-                const historicalData = await fetchHistoricalData(ticker);
-                
-                // Obtener noticias y sentimiento
-                const newsData = await fetchMarketNews(ticker);
+                // Obtener datos en paralelo para mayor velocidad
+                const [historicalData, newsData, fundamentals, sentiment] = await Promise.all([
+                    fetchHistoricalData(ticker),
+                    fetchMarketNews(ticker),
+                    fetchFinnhubFundamentals(ticker),
+                    fetchFinnhubSentiment(ticker)
+                ]);
                 
                 // Preparar contexto enriquecido para la IA
-                let contextPrompt = `Analiza el ticker ${ticker} (${stockRef[ticker]?.name || 'Desconocido'}) para los próximos 7 días.\n\n`;
+                let contextPrompt = `Analiza el ticker ${ticker} (${stockRef[ticker]?.name || fundamentals?.name || 'Desconocido'}) para los próximos 7 días.\n\n`;
                 
-                // Agregar datos técnicos
+                // Agregar datos técnicos (combinar local + Finnhub)
                 contextPrompt += `DATOS TÉCNICOS:\n`;
                 contextPrompt += `- Beta: ${stockRef[ticker]?.beta || 'N/A'} (Elasticidad del mercado)\n`;
                 contextPrompt += `- Dividend Yield: ${stockRef[ticker]?.yield || 0}%\n`;
                 contextPrompt += `- DGR (Crecimiento dividendos): ${stockRef[ticker]?.dgr || 0}%\n`;
-                contextPrompt += `- Sector: ${stockRef[ticker]?.sector || 'N/A'}\n\n`;
+                contextPrompt += `- Sector: ${fundamentals?.sector || stockRef[ticker]?.sector || 'N/A'}\n`;
+                
+                if (fundamentals) {
+                    contextPrompt += `- Market Cap: $${fundamentals.marketCap ? (fundamentals.marketCap / 1000).toFixed(2) + 'B' : 'N/A'}\n`;
+                    contextPrompt += `- País: ${fundamentals.country || 'N/A'}\n`;
+                    contextPrompt += `- Exchange: ${fundamentals.exchange || 'N/A'}\n`;
+                }
+                contextPrompt += `\n`;
+                
+                // Agregar sentiment de Finnhub si está disponible
+                if (sentiment) {
+                    contextPrompt += `SENTIMENT DEL MERCADO (Finnhub):\n`;
+                    contextPrompt += `- Buzz (artículos esta semana): ${sentiment.buzz}\n`;
+                    contextPrompt += `- Sentiment general: ${sentiment.sentiment > 0 ? '📈 Alcista' : sentiment.sentiment < 0 ? '📉 Bajista' : '➡️ Neutral'} (${(sentiment.sentiment * 100).toFixed(1)}%)\n`;
+                    contextPrompt += `- Porcentaje alcista: ${sentiment.bullishPercent.toFixed(1)}%\n`;
+                    contextPrompt += `- Porcentaje bajista: ${sentiment.bearishPercent.toFixed(1)}%\n`;
+                    contextPrompt += `- Score de noticias: ${sentiment.companyNewsScore.toFixed(2)}\n`;
+                    contextPrompt += `- Promedio del sector: ${sentiment.sectorAverageBullishPercent.toFixed(1)}% alcista\n\n`;
+                }
                 
                 // Agregar datos históricos si están disponibles
                 if (historicalData && historicalData.prices) {
