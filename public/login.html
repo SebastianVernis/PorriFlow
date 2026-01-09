@@ -102,15 +102,6 @@
             </button>
         </form>
 
-        <!-- Demo Credentials -->
-        <div class="mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
-            <p class="text-xs font-bold text-indigo-800 mb-2">🎮 Cuenta Demo:</p>
-            <div class="text-xs text-indigo-600 font-mono space-y-1">
-                <p>Usuario: <strong>demo</strong></p>
-                <p>Password: <strong>demo123456</strong></p>
-            </div>
-        </div>
-
         <!-- Messages -->
         <div id="message-container" class="mt-4 hidden">
             <div id="message" class="p-4 rounded-xl text-sm font-bold text-center"></div>
@@ -123,15 +114,18 @@
             </button>
             <div id="api-config" class="hidden mt-3 p-4 bg-slate-50 rounded-xl">
                 <label class="block text-xs font-bold text-slate-600 mb-2">API URL</label>
-                <input type="text" id="api-url" value="https://sv-portfolio-api.onrender.com" 
+                <input type="text" id="api-url" 
                     class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-mono">
-                <p class="text-xs text-slate-400 mt-2">Default: https://sv-portfolio-api.onrender.com</p>
+                <p class="text-xs text-slate-400 mt-2">Local: http://localhost:3000 | Producción: https://sv-portfolio-api.onrender.com</p>
             </div>
         </div>
     </div>
 
     <script>
-        const API_BASE_URL = localStorage.getItem('sv_api_url') || 'https://sv-portfolio-api.onrender.com';
+        // Check if running locally
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const defaultApiUrl = isLocal ? 'http://localhost:3000' : 'https://sv-portfolio-api.onrender.com';
+        const API_BASE_URL = localStorage.getItem('sv_api_url') || defaultApiUrl;
 
         // Switch between login and register
         function switchForm(formType) {
@@ -160,7 +154,15 @@
 
         // Toggle API config
         function toggleApiConfig() {
-            document.getElementById('api-config').classList.toggle('hidden');
+            const config = document.getElementById('api-config');
+            const apiUrlInput = document.getElementById('api-url');
+            
+            // Set current API URL when opening
+            if (config.classList.contains('hidden')) {
+                apiUrlInput.value = API_BASE_URL;
+            }
+            
+            config.classList.toggle('hidden');
         }
 
         // Show message

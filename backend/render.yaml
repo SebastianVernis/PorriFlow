@@ -6,19 +6,21 @@ services:
     region: oregon
     plan: free
     buildCommand: npm install && npx prisma generate
-    startCommand: npm start && npm run db:push && npm run db:migrate
+    startCommand: npx prisma db push --accept-data-loss && npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false  # Configurar manualmente en Render dashboard
+        sync: false  # Configurar manualmente en Render dashboard con la URL de Neon
       - key: JWT_SECRET
-        generateValue: true
+        sync: false  # Configurar manualmente - usar el mismo de .env local
       - key: PORT
-        value: 3000
+        value: 10000
       - key: ALLOWED_ORIGINS
-        value: https://sv-portfolio-dashboard.vercel.app,https://sv-portfolio-*.vercel.app
+        value: https://sv-portfolio-dashboard.vercel.app
       - key: SESSION_EXPIRY
         value: 7d
+      - key: ENABLE_BACKGROUND_JOBS
+        value: true
     healthCheckPath: /health
     autoDeploy: true

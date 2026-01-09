@@ -3,7 +3,10 @@
  * Handles login state and API communication
  */
 
-const API_BASE_URL = localStorage.getItem('sv_api_url') || 'https://sv-portfolio-api.onrender.com';
+// Auto-detect API URL based on environment
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const defaultApiUrl = isLocal ? 'http://localhost:3000' : 'https://sv-portfolio-api.onrender.com';
+const API_BASE_URL = localStorage.getItem('sv_api_url') || defaultApiUrl;
 
 // Check authentication
 export function checkAuth() {

@@ -11,13 +11,14 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "build": "npx prisma generate",
+    "build": "npx prisma generate && npx prisma migrate deploy",
     "postinstall": "npx prisma generate",
     "db:push": "npx prisma db push",
+    "db:migrate": "npx prisma migrate deploy",
     "db:studio": "npx prisma studio",
     "db:generate": "npx prisma generate",
     "db:seed": "node src/seed.js",
-    "deploy:render": "npx prisma generate && npx prisma db push --accept-data-loss && node src/seed.js",
+    "deploy:render": "npx prisma generate && npx prisma migrate deploy && node src/seed.js",
     "data:generate": "node scripts/generate-market-data.js",
     "data:update": "node scripts/update-prices.js",
     "data:full": "npm run data:generate && npm run data:update"
