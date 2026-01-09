@@ -1,5 +1,6 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
+import { validatePortfolioOwnership, validatePositionOwnership } from '../middleware/multitenancy.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -48,7 +49,7 @@ router.post('/', async (req, res) => {
 });
 
 // Get single portfolio
-router.get('/:id', async (req, res) => {
+router.get('/:id', validatePortfolioOwnership, async (req, res) => {
     try {
         const portfolio = await prisma.portfolio.findFirst({
             where: {
@@ -72,7 +73,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update portfolio
-router.put('/:id', async (req, res) => {
+router.put('/:id', validatePortfolioOwnership, async (req, res) => {
     try {
         const { name, description } = req.body;
 
@@ -99,7 +100,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete portfolio
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', validatePortfolioOwnership, async (req, res) => {
     try {
         const portfolio = await prisma.portfolio.findFirst({
             where: {
@@ -128,7 +129,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Add position
-router.post('/:id/positions', async (req, res) => {
+router.post('/:id/positions', validatePortfolioOwnership, async (req, res) => {
     try {
         const { ticker, shares, avgCost, currentPrice, beta, dgr, dividendYield, sector, name, isCrypto } = req.body;
 
@@ -136,18 +137,7 @@ router.post('/:id/positions', async (req, res) => {
             return res.status(400).json({ error: 'Ticker, shares, and avgCost are required' });
         }
 
-        // Verify portfolio belongs to user
-        const portfolio = await prisma.portfolio.findFirst({
-            where: {
-                id: req.params.id,
-                userId: req.userId
-            }
-        });
-
-        if (!portfolio) {
-            return res.status(404).json({ error: 'Portfolio not found' });
-        }
-
+        // Portfolio already validated by middleware
         const position = await prisma.position.create({
             data: {
                 portfolioId: req.params.id,
@@ -172,22 +162,11 @@ router.post('/:id/positions', async (req, res) => {
 });
 
 // Update position
-router.put('/:portfolioId/positions/:positionId', async (req, res) => {
+router.put('/:portfolioId/positions/:positionId', validatePositionOwnership, async (req, res) => {
     try {
         const { shares, avgCost, currentPrice } = req.body;
 
-        // Verify ownership
-        const portfolio = await prisma.portfolio.findFirst({
-            where: {
-                id: req.params.portfolioId,
-                userId: req.userId
-            }
-        });
-
-        if (!portfolio) {
-            return res.status(404).json({ error: 'Portfolio not found' });
-        }
-
+        // Ownership already validated by middleware
         const position = await prisma.position.updateMany({
             where: {
                 id: req.params.positionId,
@@ -212,20 +191,9 @@ router.put('/:portfolioId/positions/:positionId', async (req, res) => {
 });
 
 // Delete position
-router.delete('/:portfolioId/positions/:positionId', async (req, res) => {
+router.delete('/:portfolioId/positions/:positionId', validatePositionOwnership, async (req, res) => {
     try {
-        // Verify ownership
-        const portfolio = await prisma.portfolio.findFirst({
-            where: {
-                id: req.params.portfolioId,
-                userId: req.userId
-            }
-        });
-
-        if (!portfolio) {
-            return res.status(404).json({ error: 'Portfolio not found' });
-        }
-
+        // Ownership already validated by middleware
         await prisma.position.deleteMany({
             where: {
                 id: req.params.positionId,
@@ -241,7 +209,7 @@ router.delete('/:portfolioId/positions/:positionId', async (req, res) => {
 });
 
 // Bulk update positions (for price refresh)
-router.post('/:id/positions/bulk-update', async (req, res) => {
+router.post('/:id/positions/bulk-update', validatePortfolioOwnership, async (req, res) => {
     try {
         const { updates } = req.body; // Array of { ticker, currentPrice }
 
@@ -249,18 +217,7 @@ router.post('/:id/positions/bulk-update', async (req, res) => {
             return res.status(400).json({ error: 'Updates must be an array' });
         }
 
-        // Verify ownership
-        const portfolio = await prisma.portfolio.findFirst({
-            where: {
-                id: req.params.id,
-                userId: req.userId
-            }
-        });
-
-        if (!portfolio) {
-            return res.status(404).json({ error: 'Portfolio not found' });
-        }
-
+        // Ownership already validated by middleware
         // Update each position
         const updatePromises = updates.map(({ ticker, currentPrice }) =>
             prisma.position.updateMany({

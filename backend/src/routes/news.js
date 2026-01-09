@@ -121,8 +121,8 @@ router.get('/portfolio/:portfolioId', authMiddleware, async (req, res) => {
         const { portfolioId } = req.params;
         const { limit = 5 } = req.query;
         
-        // Get portfolio positions
-        const portfolio = await req.prisma.portfolio.findUnique({
+        // Get portfolio positions - validate ownership
+        const portfolio = await req.prisma.portfolio.findFirst({
             where: { 
                 id: portfolioId,
                 userId: req.userId
@@ -135,7 +135,7 @@ router.get('/portfolio/:portfolioId', authMiddleware, async (req, res) => {
         });
         
         if (!portfolio) {
-            return res.status(404).json({ error: 'Portfolio not found' });
+            return res.status(404).json({ error: 'Portfolio not found or access denied' });
         }
         
         const symbols = [...new Set(portfolio.positions.map(p => p.ticker))];
