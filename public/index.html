@@ -1283,9 +1283,14 @@
 
         function updateHeaderStats(stats) {
             const total = stats.val;
+            const totalCost = stats.cost;
             const avgY = total > 0 ? (stats.yield / total) : 0;
             const avgB = total > 0 ? (stats.beta / total) : 0;
             const avgD = total > 0 ? (stats.dgr / total) : 0;
+            
+            // Calcular ganancia/pérdida total
+            const totalGainLoss = total - totalCost;
+            const totalGainLossPct = totalCost > 0 ? ((totalGainLoss / totalCost) * 100) : 0;
             
             // Meta Semanal: r = (1.20)^(1/52)-1 ≈ 0.35%
             const weeklyTargetVal = total * 0.0035;
@@ -1293,6 +1298,15 @@
             document.getElementById('total-value').innerText = `$${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             document.getElementById('weekly-target').innerText = `+$${weeklyTargetVal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             document.getElementById('portfolio-beta').innerText = avgB.toFixed(2);
+            
+            // Mostrar ganancia/pérdida total
+            const gainLossEl = document.getElementById('total-gain-loss');
+            if (gainLossEl) {
+                const sign = totalGainLoss >= 0 ? '+' : '';
+                const color = totalGainLoss >= 0 ? 'text-emerald-600' : 'text-rose-600';
+                gainLossEl.innerHTML = `<span class="${color} font-black">${sign}$${totalGainLoss.toLocaleString('en-US', {minimumFractionDigits: 2})} (${sign}${totalGainLossPct.toFixed(2)}%)</span>`;
+                gainLossEl.className = `text-xs font-bold mt-1 ${color}`;
+            }
             
             // Proyección Anual Estimada
             const proj = avgY + (avgD * 0.6) + 7;
@@ -2241,10 +2255,34 @@ NO incluyas texto adicional, SOLO el JSON.`;
                 const nameEl = document.getElementById('popup-name');
                 const statsEl = document.getElementById('popup-stats');
                 
-                // Posicionar popup
+                // Posicionar popup con detección de bordes
                 const rect = event.target.closest('td').getBoundingClientRect();
-                popup.style.left = `${rect.right + 20}px`;
-                popup.style.top = `${rect.top}px`;
+                const popupWidth = 400; // Ancho aproximado del popup
+                const popupHeight = 300; // Alto aproximado del popup
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                const scrollY = window.scrollY;
+                
+                let left = rect.right + 20;
+                let top = rect.top + scrollY;
+                
+                // Si el popup se sale por la derecha, mostrarlo a la izquierda
+                if (left + popupWidth > viewportWidth) {
+                    left = rect.left - popupWidth - 20;
+                }
+                
+                // Si el popup se sale por abajo, mostrarlo hacia arriba
+                if (rect.top + popupHeight > viewportHeight) {
+                    top = rect.bottom + scrollY - popupHeight;
+                }
+                
+                // Si se sale por arriba, ajustar
+                if (top < scrollY) {
+                    top = scrollY + 20;
+                }
+                
+                popup.style.left = `${left}px`;
+                popup.style.top = `${top}px`;
                 
                 // Mostrar popup con info básica
                 tickerEl.textContent = ticker;

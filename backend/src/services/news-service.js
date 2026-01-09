@@ -6,6 +6,7 @@
 import https from 'https';
 import http from 'http';
 import { PrismaClient } from '@prisma/client';
+import { analyzeArticle } from './sentiment-analyzer.js';
 
 const prisma = new PrismaClient();
 
@@ -310,6 +311,15 @@ export async function saveNewsToDatabase(symbol, news) {
         try {
             const { type, category } = classifyNews(article);
             
+            // Analizar sentimiento con nuestro analizador propio
+            let sentimentData = null;
+            if (!article.sentiment) {
+                const analysis = analyzeArticle(article);
+                sentimentData = analysis.sentiment;
+            } else {
+                sentimentData = article.sentiment;
+            }
+            
             await prisma.news.upsert({
                 where: { url: article.url },
                 create: {
@@ -322,12 +332,12 @@ export async function saveNewsToDatabase(symbol, news) {
                     thumbnail: article.thumbnail || null,
                     type,
                     category,
-                    sentiment: article.sentiment || null,
+                    sentiment: sentimentData,
                     publishedAt: article.publishedAt,
                     fetchedAt: new Date()
                 },
                 update: {
-                    sentiment: article.sentiment || null,
+                    sentiment: sentimentData,
                     fetchedAt: new Date()
                 }
             });
