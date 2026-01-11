@@ -74,11 +74,11 @@ function tokenize(text) {
 
 /**
  * Fetch sentiment from external API (if SENTIMENT_API_KEY is configured)
- * Supports multiple providers: TextBlob, VADER, Hugging Face, etc.
+ * Supports multiple providers: API Ninjas, Hugging Face, etc.
  */
 async function fetchExternalSentiment(text) {
     const apiKey = process.env.SENTIMENT_API_KEY;
-    const apiProvider = process.env.SENTIMENT_API_PROVIDER || 'huggingface';
+    const apiProvider = process.env.SENTIMENT_API_PROVIDER || 'api-ninjas';
     
     if (!apiKey) {
         return null; // Fall back to local analysis
@@ -88,6 +88,18 @@ async function fetchExternalSentiment(text) {
         let url, options;
         
         switch (apiProvider.toLowerCase()) {
+            case 'api-ninjas':
+                // API Ninjas Sentiment Analysis
+                const encodedText = encodeURIComponent(text.substring(0, 500)); // Limit text length
+                url = `https://api.api-ninjas.com/v1/sentiment?text=${encodedText}`;
+                options = {
+                    method: 'GET',
+                    headers: {
+                        'X-Api-Key': apiKey
+                    }
+                };
+                break;
+                
             case 'huggingface':
                 // Hugging Face Inference API
                 url = 'https://api-inference.huggingface.co/models/ProsusAI/finbert';
@@ -129,7 +141,20 @@ async function fetchExternalSentiment(text) {
         const data = await response.json();
         
         // Parse response based on provider
-        if (apiProvider === 'huggingface') {
+        if (apiProvider === 'api-ninjas') {
+            // API Ninjas returns { text, score, sentiment }
+            // score is between -1 (negative) and 1 (positive)
+            const score = (data.score || 0) * 100;
+            const sentiment = data.score > 0.2 ? 'positive' :
+                            data.score < -0.2 ? 'negative' : 'neutral';
+            
+            return {
+                score: Math.round(score),
+                sentiment,
+                confidence: Math.round(Math.abs(data.score || 0) * 100),
+                source: 'api-ninjas'
+            };
+        } else if (apiProvider === 'huggingface') {
             // FinBERT returns array of labels with scores
             const result = data[0];
             const positive = result.find(r => r.label === 'positive')?.score || 0;

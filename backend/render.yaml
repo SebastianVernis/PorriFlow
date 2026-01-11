@@ -28,5 +28,11 @@ services:
         value: 68b8070ec719075f3ea37d9069d4ea68
       - key: ALPHA_VANTAGE_API_KEY
         value: CJIOJ9QSU8A2JM7R
+      - key: SENTIMENT_API_KEY
+        value: QJIfQUChA4uu1LVgJOSPZ4JmONfEvKIJUWLPwqZi
+      - key: SENTIMENT_API_PROVIDER
+        value: api-ninjas
+      - key: SENTIMENT_API_URL
+        value: ""
     healthCheckPath: /health
     autoDeploy: true
