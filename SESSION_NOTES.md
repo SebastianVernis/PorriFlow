@@ -175,16 +175,19 @@ public/
 
 ## 🐛 Errores Conocidos
 
-### 1. HTTP 403 en Finnhub (CRÍTICO)
-- **Impacto:** No se pueden obtener precios ni datos históricos
-- **Frecuencia:** Constante
-- **Solución:** Configurar `FINNHUB_API_KEY` en Render
+### 1. HTTP 403 en Finnhub ✅ VERIFICADO
+- **Impacto:** NINGUNO - API funciona correctamente
+- **Estado:** ✅ Finnhub API Key configurada y operativa
+- **Test:** `/api/debug/test-finnhub` retorna HTTP 200
+- **Rate Limit:** 60 llamadas/minuto disponibles
+- **Nota:** El error original era de SEC, no de Finnhub
 
-### 2. SEC Filings HTTP 403
+### 2. SEC Filings HTTP 403 ✅ RESUELTO
 - **Impacto:** No se pueden obtener filings de la SEC
-- **Frecuencia:** Constante
-- **Solución:** SEC requiere User-Agent específico o proxy
-- **Prioridad:** Baja (no crítico)
+- **Frecuencia:** Constante (antes del fix)
+- **Solución:** ✅ Implementado User-Agent con info de contacto
+- **Commit:** `5268828` - "fix: SEC.gov API now uses proper User-Agent"
+- **Prioridad:** ✅ Completado
 
 ### 3. Registro falla en producción (500)
 - **Impacto:** Usuarios nuevos no pueden registrarse desde frontend
@@ -290,11 +293,11 @@ npm run db:push
 ## 🔄 Últimos Commits
 
 ```
+5268828 - fix: SEC.gov API now uses proper User-Agent with contact info ✅
+05327f7 - feat: add debug endpoints for Finnhub API troubleshooting
 990fec2 - fix: correct portfolio API response format for multitenancy
 1f74173 - fix: endpoint configuration for Render deployment
 b82f2dd - Nuevo
-b55f5f5 - Merge PR: agent/verifica-funciones
-1333f84 - feat(crypto): add sentiment analysis with API key
 ```
 
 ---
