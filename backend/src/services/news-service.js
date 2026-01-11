@@ -314,7 +314,7 @@ export async function saveNewsToDatabase(symbol, news) {
             // Analizar sentimiento con nuestro analizador propio
             let sentimentData = null;
             if (!article.sentiment) {
-                const analysis = analyzeArticle(article);
+                const analysis = await analyzeArticle(article);
                 sentimentData = analysis.sentiment;
             } else {
                 sentimentData = article.sentiment;

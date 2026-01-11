@@ -100,12 +100,34 @@ export const SYMBOL_DATABASE = {
         'T', 'VZ', 'TMUS', 'CHTR', 'CMCSA', 'VOD', 'AMX', 'TEF', 'TU', 'CHL'
     ],
     
-    // Crypto
+    // Crypto (50+ major cryptocurrencies)
     crypto: [
+        // Top 10 by Market Cap
         'BTC-USD', 'ETH-USD', 'BNB-USD', 'XRP-USD', 'ADA-USD', 'SOL-USD',
-        'DOT-USD', 'DOGE-USD', 'MATIC-USD', 'AVAX-USD', 'LINK-USD', 'UNI-USD',
-        'ATOM-USD', 'LTC-USD', 'BCH-USD', 'XLM-USD', 'ALGO-USD', 'FTM-USD',
-        'SAND-USD', 'MANA-USD', 'AAVE-USD', 'MKR-USD', 'COMP-USD', 'SUSHI-USD'
+        'DOT-USD', 'DOGE-USD', 'MATIC-USD', 'AVAX-USD',
+        
+        // DeFi & Smart Contracts
+        'LINK-USD', 'UNI-USD', 'AAVE-USD', 'MKR-USD', 'COMP-USD', 'SUSHI-USD',
+        'CRV-USD', 'SNX-USD', 'YFI-USD', '1INCH-USD', 'BAL-USD',
+        
+        // Layer 1 & Layer 2
+        'ATOM-USD', 'NEAR-USD', 'FTM-USD', 'ALGO-USD', 'EGLD-USD', 'HBAR-USD',
+        'ICP-USD', 'VET-USD', 'FIL-USD', 'THETA-USD', 'EOS-USD', 'XTZ-USD',
+        
+        // Metaverse & Gaming
+        'SAND-USD', 'MANA-USD', 'AXS-USD', 'ENJ-USD', 'GALA-USD', 'IMX-USD',
+        'APE-USD', 'GMT-USD',
+        
+        // Stablecoins & Wrapped Assets
+        'USDT-USD', 'USDC-USD', 'DAI-USD', 'BUSD-USD', 'WBTC-USD',
+        
+        // Other Major Coins
+        'LTC-USD', 'BCH-USD', 'XLM-USD', 'TRX-USD', 'ETC-USD', 'XMR-USD',
+        'ZEC-USD', 'DASH-USD', 'NEO-USD', 'WAVES-USD', 'QTUM-USD',
+        
+        // Emerging & Popular
+        'OP-USD', 'ARB-USD', 'LDO-USD', 'RPL-USD', 'RNDR-USD', 'GRT-USD',
+        'CHZ-USD', 'FLOW-USD', 'KAVA-USD', 'CELO-USD'
     ],
     
     // Major Indices
