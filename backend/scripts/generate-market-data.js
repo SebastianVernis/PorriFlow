@@ -118,8 +118,9 @@ const marketData = {
         '^N225': { name: 'Nikkei 225', sector: 'Index', beta: 0.95, yield: 1.8, dgr: 0.0, price: 33464.17, isIndex: true }
     },
     
-    // === CRIPTOMONEDAS ===
+    // === CRIPTOMONEDAS (50+ símbolos) ===
     crypto: {
+        // Top 10 by Market Cap
         'BTC-USD': { name: 'Bitcoin', sector: 'Crypto', beta: 2.5, yield: 0.0, dgr: 0.0, price: 44328.50, isCrypto: true },
         'ETH-USD': { name: 'Ethereum', sector: 'Crypto', beta: 2.8, yield: 0.0, dgr: 0.0, price: 2328.75, isCrypto: true },
         'BNB-USD': { name: 'Binance Coin', sector: 'Crypto', beta: 3.2, yield: 0.0, dgr: 0.0, price: 315.42, isCrypto: true },
@@ -130,8 +131,75 @@ const marketData = {
         'DOGE-USD': { name: 'Dogecoin', sector: 'Crypto', beta: 4.0, yield: 0.0, dgr: 0.0, price: 0.089, isCrypto: true },
         'MATIC-USD': { name: 'Polygon', sector: 'Crypto', beta: 3.6, yield: 0.0, dgr: 0.0, price: 0.92, isCrypto: true },
         'AVAX-USD': { name: 'Avalanche', sector: 'Crypto', beta: 3.7, yield: 0.0, dgr: 0.0, price: 38.92, isCrypto: true },
-        'LINK-USD': { name: 'Chainlink', sector: 'Crypto', beta: 3.3, yield: 0.0, dgr: 0.0, price: 15.67, isCrypto: true },
-        'UNI-USD': { name: 'Uniswap', sector: 'Crypto', beta: 3.5, yield: 0.0, dgr: 0.0, price: 6.78, isCrypto: true }
+        
+        // DeFi & Smart Contracts
+        'LINK-USD': { name: 'Chainlink', sector: 'Crypto/DeFi', beta: 3.3, yield: 0.0, dgr: 0.0, price: 15.67, isCrypto: true },
+        'UNI-USD': { name: 'Uniswap', sector: 'Crypto/DeFi', beta: 3.5, yield: 0.0, dgr: 0.0, price: 6.78, isCrypto: true },
+        'AAVE-USD': { name: 'Aave', sector: 'Crypto/DeFi', beta: 3.6, yield: 0.0, dgr: 0.0, price: 98.45, isCrypto: true },
+        'MKR-USD': { name: 'Maker', sector: 'Crypto/DeFi', beta: 3.4, yield: 0.0, dgr: 0.0, price: 1567.89, isCrypto: true },
+        'COMP-USD': { name: 'Compound', sector: 'Crypto/DeFi', beta: 3.5, yield: 0.0, dgr: 0.0, price: 56.78, isCrypto: true },
+        'SUSHI-USD': { name: 'SushiSwap', sector: 'Crypto/DeFi', beta: 3.7, yield: 0.0, dgr: 0.0, price: 1.23, isCrypto: true },
+        'CRV-USD': { name: 'Curve DAO', sector: 'Crypto/DeFi', beta: 3.5, yield: 0.0, dgr: 0.0, price: 0.89, isCrypto: true },
+        'SNX-USD': { name: 'Synthetix', sector: 'Crypto/DeFi', beta: 3.6, yield: 0.0, dgr: 0.0, price: 3.45, isCrypto: true },
+        'YFI-USD': { name: 'Yearn Finance', sector: 'Crypto/DeFi', beta: 3.8, yield: 0.0, dgr: 0.0, price: 8234.56, isCrypto: true },
+        '1INCH-USD': { name: '1inch', sector: 'Crypto/DeFi', beta: 3.7, yield: 0.0, dgr: 0.0, price: 0.45, isCrypto: true },
+        'BAL-USD': { name: 'Balancer', sector: 'Crypto/DeFi', beta: 3.5, yield: 0.0, dgr: 0.0, price: 4.56, isCrypto: true },
+        
+        // Layer 1 & Layer 2
+        'ATOM-USD': { name: 'Cosmos', sector: 'Crypto/L1', beta: 3.4, yield: 0.0, dgr: 0.0, price: 10.23, isCrypto: true },
+        'NEAR-USD': { name: 'NEAR Protocol', sector: 'Crypto/L1', beta: 3.6, yield: 0.0, dgr: 0.0, price: 3.45, isCrypto: true },
+        'FTM-USD': { name: 'Fantom', sector: 'Crypto/L1', beta: 3.7, yield: 0.0, dgr: 0.0, price: 0.56, isCrypto: true },
+        'ALGO-USD': { name: 'Algorand', sector: 'Crypto/L1', beta: 3.5, yield: 0.0, dgr: 0.0, price: 0.23, isCrypto: true },
+        'EGLD-USD': { name: 'MultiversX', sector: 'Crypto/L1', beta: 3.6, yield: 0.0, dgr: 0.0, price: 45.67, isCrypto: true },
+        'HBAR-USD': { name: 'Hedera', sector: 'Crypto/L1', beta: 3.4, yield: 0.0, dgr: 0.0, price: 0.078, isCrypto: true },
+        'ICP-USD': { name: 'Internet Computer', sector: 'Crypto/L1', beta: 3.8, yield: 0.0, dgr: 0.0, price: 12.34, isCrypto: true },
+        'VET-USD': { name: 'VeChain', sector: 'Crypto/L1', beta: 3.5, yield: 0.0, dgr: 0.0, price: 0.034, isCrypto: true },
+        'FIL-USD': { name: 'Filecoin', sector: 'Crypto/Storage', beta: 3.6, yield: 0.0, dgr: 0.0, price: 5.67, isCrypto: true },
+        'THETA-USD': { name: 'Theta Network', sector: 'Crypto/Media', beta: 3.5, yield: 0.0, dgr: 0.0, price: 1.23, isCrypto: true },
+        'EOS-USD': { name: 'EOS', sector: 'Crypto/L1', beta: 3.4, yield: 0.0, dgr: 0.0, price: 0.89, isCrypto: true },
+        'XTZ-USD': { name: 'Tezos', sector: 'Crypto/L1', beta: 3.3, yield: 0.0, dgr: 0.0, price: 1.12, isCrypto: true },
+        
+        // Metaverse & Gaming
+        'SAND-USD': { name: 'The Sandbox', sector: 'Crypto/Metaverse', beta: 3.8, yield: 0.0, dgr: 0.0, price: 0.56, isCrypto: true },
+        'MANA-USD': { name: 'Decentraland', sector: 'Crypto/Metaverse', beta: 3.7, yield: 0.0, dgr: 0.0, price: 0.45, isCrypto: true },
+        'AXS-USD': { name: 'Axie Infinity', sector: 'Crypto/Gaming', beta: 3.9, yield: 0.0, dgr: 0.0, price: 7.89, isCrypto: true },
+        'ENJ-USD': { name: 'Enjin Coin', sector: 'Crypto/Gaming', beta: 3.6, yield: 0.0, dgr: 0.0, price: 0.34, isCrypto: true },
+        'GALA-USD': { name: 'Gala', sector: 'Crypto/Gaming', beta: 3.8, yield: 0.0, dgr: 0.0, price: 0.023, isCrypto: true },
+        'IMX-USD': { name: 'Immutable X', sector: 'Crypto/Gaming', beta: 3.7, yield: 0.0, dgr: 0.0, price: 1.89, isCrypto: true },
+        'APE-USD': { name: 'ApeCoin', sector: 'Crypto/Metaverse', beta: 3.9, yield: 0.0, dgr: 0.0, price: 1.45, isCrypto: true },
+        'GMT-USD': { name: 'STEPN', sector: 'Crypto/Gaming', beta: 3.8, yield: 0.0, dgr: 0.0, price: 0.23, isCrypto: true },
+        
+        // Stablecoins & Wrapped Assets
+        'USDT-USD': { name: 'Tether', sector: 'Crypto/Stablecoin', beta: 0.1, yield: 0.0, dgr: 0.0, price: 1.00, isCrypto: true },
+        'USDC-USD': { name: 'USD Coin', sector: 'Crypto/Stablecoin', beta: 0.1, yield: 0.0, dgr: 0.0, price: 1.00, isCrypto: true },
+        'DAI-USD': { name: 'Dai', sector: 'Crypto/Stablecoin', beta: 0.1, yield: 0.0, dgr: 0.0, price: 1.00, isCrypto: true },
+        'BUSD-USD': { name: 'Binance USD', sector: 'Crypto/Stablecoin', beta: 0.1, yield: 0.0, dgr: 0.0, price: 1.00, isCrypto: true },
+        'WBTC-USD': { name: 'Wrapped Bitcoin', sector: 'Crypto/Wrapped', beta: 2.5, yield: 0.0, dgr: 0.0, price: 44300.00, isCrypto: true },
+        
+        // Other Major Coins
+        'LTC-USD': { name: 'Litecoin', sector: 'Crypto', beta: 3.2, yield: 0.0, dgr: 0.0, price: 73.45, isCrypto: true },
+        'BCH-USD': { name: 'Bitcoin Cash', sector: 'Crypto', beta: 3.3, yield: 0.0, dgr: 0.0, price: 234.56, isCrypto: true },
+        'XLM-USD': { name: 'Stellar', sector: 'Crypto', beta: 3.4, yield: 0.0, dgr: 0.0, price: 0.12, isCrypto: true },
+        'TRX-USD': { name: 'TRON', sector: 'Crypto', beta: 3.5, yield: 0.0, dgr: 0.0, price: 0.089, isCrypto: true },
+        'ETC-USD': { name: 'Ethereum Classic', sector: 'Crypto', beta: 3.4, yield: 0.0, dgr: 0.0, price: 23.45, isCrypto: true },
+        'XMR-USD': { name: 'Monero', sector: 'Crypto/Privacy', beta: 3.3, yield: 0.0, dgr: 0.0, price: 156.78, isCrypto: true },
+        'ZEC-USD': { name: 'Zcash', sector: 'Crypto/Privacy', beta: 3.4, yield: 0.0, dgr: 0.0, price: 34.56, isCrypto: true },
+        'DASH-USD': { name: 'Dash', sector: 'Crypto', beta: 3.3, yield: 0.0, dgr: 0.0, price: 28.90, isCrypto: true },
+        'NEO-USD': { name: 'NEO', sector: 'Crypto', beta: 3.5, yield: 0.0, dgr: 0.0, price: 12.34, isCrypto: true },
+        'WAVES-USD': { name: 'Waves', sector: 'Crypto', beta: 3.4, yield: 0.0, dgr: 0.0, price: 2.34, isCrypto: true },
+        'QTUM-USD': { name: 'Qtum', sector: 'Crypto', beta: 3.3, yield: 0.0, dgr: 0.0, price: 3.45, isCrypto: true },
+        
+        // Emerging & Popular
+        'OP-USD': { name: 'Optimism', sector: 'Crypto/L2', beta: 3.6, yield: 0.0, dgr: 0.0, price: 2.34, isCrypto: true },
+        'ARB-USD': { name: 'Arbitrum', sector: 'Crypto/L2', beta: 3.7, yield: 0.0, dgr: 0.0, price: 1.23, isCrypto: true },
+        'LDO-USD': { name: 'Lido DAO', sector: 'Crypto/DeFi', beta: 3.5, yield: 0.0, dgr: 0.0, price: 2.45, isCrypto: true },
+        'RPL-USD': { name: 'Rocket Pool', sector: 'Crypto/DeFi', beta: 3.6, yield: 0.0, dgr: 0.0, price: 28.90, isCrypto: true },
+        'RNDR-USD': { name: 'Render Token', sector: 'Crypto/AI', beta: 3.7, yield: 0.0, dgr: 0.0, price: 3.45, isCrypto: true },
+        'GRT-USD': { name: 'The Graph', sector: 'Crypto/Infrastructure', beta: 3.5, yield: 0.0, dgr: 0.0, price: 0.23, isCrypto: true },
+        'CHZ-USD': { name: 'Chiliz', sector: 'Crypto/Sports', beta: 3.6, yield: 0.0, dgr: 0.0, price: 0.089, isCrypto: true },
+        'FLOW-USD': { name: 'Flow', sector: 'Crypto/NFT', beta: 3.5, yield: 0.0, dgr: 0.0, price: 0.78, isCrypto: true },
+        'KAVA-USD': { name: 'Kava', sector: 'Crypto/DeFi', beta: 3.4, yield: 0.0, dgr: 0.0, price: 0.89, isCrypto: true },
+        'CELO-USD': { name: 'Celo', sector: 'Crypto/Mobile', beta: 3.5, yield: 0.0, dgr: 0.0, price: 0.67, isCrypto: true }
     },
     
     // === ETFs ===
