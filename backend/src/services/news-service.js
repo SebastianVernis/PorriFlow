@@ -45,7 +45,7 @@ function fetchURLWithSECHeaders(url) {
         const options = {
             headers: {
                 // SEC requires User-Agent with company name and contact email
-                'User-Agent': 'SV Portfolio App (contact@svportfolio.com)',
+                'User-Agent': 'SV Portfolio App sebastianvernis@gmail.com',
                 'Accept': 'application/atom+xml,application/xml,text/xml,*/*',
                 'Host': 'www.sec.gov'
             },
