@@ -168,7 +168,7 @@ export function getAllSymbols() {
 }
 
 /**
- * Fetch historical data from Yahoo Finance
+ * Fetch historical data from Finnhub API
  */
 export async function fetchHistoricalData(symbol, options = {}) {
     const {
@@ -177,31 +177,44 @@ export async function fetchHistoricalData(symbol, options = {}) {
         interval = '1d' // 1d, 1wk, 1mo
     } = options;
     
+    const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
+    
+    if (!FINNHUB_API_KEY) {
+        console.error('FINNHUB_API_KEY not configured');
+        return [];
+    }
+    
     try {
-        const url = `https://query1.finance.yahoo.com/v7/finance/download/${symbol}?period1=${period1}&period2=${period2}&interval=${interval}&events=history`;
+        // Convert interval to Finnhub resolution
+        const resolutionMap = {
+            '1d': 'D',
+            '1wk': 'W',
+            '1mo': 'M',
+            '1h': '60',
+            '5m': '5'
+        };
+        const resolution = resolutionMap[interval] || 'D';
         
-        const csv = await fetchURL(url);
-        const lines = csv.trim().split('\n');
+        const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${period1}&to=${period2}&token=${FINNHUB_API_KEY}`;
         
-        if (lines.length < 2) {
+        const response = await fetchURL(url);
+        const json = JSON.parse(response);
+        
+        if (json.s !== 'ok' || !json.t || json.t.length === 0) {
             return [];
         }
         
-        // Parse CSV
+        // Parse Finnhub response
         const data = [];
-        for (let i = 1; i < lines.length; i++) {
-            const [date, open, high, low, close, adjClose, volume] = lines[i].split(',');
-            
-            if (date && open && high && low && close) {
-                data.push({
-                    date: new Date(date),
-                    open: parseFloat(open),
-                    high: parseFloat(high),
-                    low: parseFloat(low),
-                    close: parseFloat(close),
-                    volume: volume ? parseFloat(volume) : null
-                });
-            }
+        for (let i = 0; i < json.t.length; i++) {
+            data.push({
+                date: new Date(json.t[i] * 1000),
+                open: json.o[i],
+                high: json.h[i],
+                low: json.l[i],
+                close: json.c[i],
+                volume: json.v[i] || null
+            });
         }
         
         return data;
@@ -374,6 +387,7 @@ export async function updatePriceCache(symbol) {
 }
 
 export default {
+    SYMBOL_DATABASE,
     getAllSymbols,
     fetchHistoricalData,
     saveHistoricalData,

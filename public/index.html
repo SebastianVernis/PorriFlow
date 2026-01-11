@@ -16,6 +16,8 @@
     <script type="module" src="/assets/js/websocket.js"></script>
     <!-- News Module -->
     <script type="module" src="/assets/js/news.js"></script>
+    <!-- Sentiment Analyzer Module -->
+    <script type="module" src="/assets/js/sentiment-analyzer.js"></script>
     <style>
         .ai-pulse {
             animation: pulse-indigo 2s infinite;
@@ -314,6 +316,11 @@
 
         <!-- TAB CONTENT: News -->
         <div id="content-news" class="tab-content hidden">
+            <!-- Sentiment Overview Cards -->
+            <div id="sentiment-overview" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <!-- Sentiment cards will be dynamically inserted here -->
+            </div>
+
             <div class="glass-card p-6 rounded-2xl shadow-sm mb-6">
                 <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
                     <div>
@@ -321,7 +328,7 @@
                             <i class="fa-solid fa-newspaper text-indigo-600 mr-2"></i>Noticias Financieras
                             <span id="ws-status" class="ml-2 text-[9px] px-2 py-1 rounded-full bg-slate-200 text-slate-600">Conectando...</span>
                         </h3>
-                        <p class="text-xs text-slate-500">Últimas noticias de tu portafolio</p>
+                        <p class="text-xs text-slate-500">Últimas noticias de tu portafolio con análisis de sentimiento</p>
                     </div>
                     <div class="flex gap-2 flex-wrap">
                         <!-- Filtros -->
@@ -3130,6 +3137,7 @@ NO incluyas texto adicional, SOLO el JSON.`;
         
         async function loadPortfolioNews() {
             const container = document.getElementById('portfolio-news-feed');
+            const sentimentOverview = document.getElementById('sentiment-overview');
             if (!container) return;
             
             // Show loading
@@ -3137,14 +3145,19 @@ NO incluyas texto adicional, SOLO el JSON.`;
                 <div class="flex items-center justify-center p-12">
                     <div class="text-center">
                         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                        <p class="text-sm text-slate-500 font-bold">Cargando noticias...</p>
+                        <p class="text-sm text-slate-500 font-bold">Cargando noticias y análisis de sentimiento...</p>
                     </div>
                 </div>
             `;
             
+            if (sentimentOverview) {
+                sentimentOverview.innerHTML = '';
+            }
+            
             try {
-                // Import news module
+                // Import modules
                 const newsModule = await import('/assets/js/news.js');
+                const sentimentModule = await import('/assets/js/sentiment-analyzer.js');
                 
                 // Get portfolio symbols
                 const symbols = [...new Set(portfolio.map(p => p.ticker))];
@@ -3164,9 +3177,30 @@ NO incluyas texto adicional, SOLO el JSON.`;
                 const limitedSymbols = symbols.slice(0, 5);
                 const newsResults = await newsModule.getBatchNews(limitedSymbols, 3);
                 
+                // Calculate sentiment stats for all symbols with news
+                const sentimentStats = {};
+                for (const symbol of limitedSymbols) {
+                    const articles = newsResults[symbol] || [];
+                    if (articles.length > 0) {
+                        const stats = calculateSentimentStats(articles);
+                        sentimentStats[symbol] = stats;
+                    }
+                }
+                
+                // Render sentiment overview cards
+                if (sentimentOverview && Object.keys(sentimentStats).length > 0) {
+                    const overviewCards = Object.entries(sentimentStats)
+                        .slice(0, 3)
+                        .map(([symbol, stats]) => renderSentimentOverviewCard(symbol, stats))
+                        .join('');
+                    sentimentOverview.innerHTML = overviewCards;
+                }
+                
+                const newsResults2 = newsResults;
+                
                 // Combine all news
                 const allNews = [];
-                Object.entries(newsResults).forEach(([symbol, articles]) => {
+                Object.entries(newsResults2).forEach(([symbol, articles]) => {
                     articles.forEach(article => {
                         allNews.push({ ...article, symbol });
                     });
@@ -3345,6 +3379,115 @@ NO incluyas texto adicional, SOLO el JSON.`;
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+        
+        // Helper function to calculate sentiment stats
+        function calculateSentimentStats(articles) {
+            if (!Array.isArray(articles) || articles.length === 0) {
+                return {
+                    overall: 'neutral',
+                    positive: 0,
+                    negative: 0,
+                    neutral: 0,
+                    total: 0,
+                    avgScore: 0,
+                    confidence: 0
+                };
+            }
+
+            let positive = 0;
+            let negative = 0;
+            let neutral = 0;
+            let totalScore = 0;
+            let totalConfidence = 0;
+            let articlesWithSentiment = 0;
+
+            articles.forEach(article => {
+                if (article.sentiment) {
+                    articlesWithSentiment++;
+                    
+                    if (article.sentiment === 'positive') positive++;
+                    else if (article.sentiment === 'negative') negative++;
+                    else neutral++;
+                    
+                    if (article.sentimentScore !== undefined) {
+                        totalScore += article.sentimentScore;
+                    }
+                    
+                    if (article.sentimentConfidence !== undefined) {
+                        totalConfidence += article.sentimentConfidence;
+                    }
+                }
+            });
+
+            const avgScore = articlesWithSentiment > 0 ? totalScore / articlesWithSentiment : 0;
+            const avgConfidence = articlesWithSentiment > 0 ? totalConfidence / articlesWithSentiment : 0;
+
+            let overall = 'neutral';
+            if (avgScore > 15) overall = 'positive';
+            else if (avgScore < -15) overall = 'negative';
+
+            return {
+                overall,
+                positive,
+                negative,
+                neutral,
+                total: articles.length,
+                avgScore: Math.round(avgScore),
+                confidence: Math.round(avgConfidence)
+            };
+        }
+        
+        // Helper function to render sentiment overview card
+        function renderSentimentOverviewCard(symbol, stats) {
+            const { overall, positive, negative, neutral, total, avgScore } = stats;
+            
+            const posPercent = total > 0 ? Math.round((positive / total) * 100) : 0;
+            const negPercent = total > 0 ? Math.round((negative / total) * 100) : 0;
+            
+            const borderClass = overall === 'positive' ? 'border-emerald-500' : 
+                               overall === 'negative' ? 'border-rose-500' : 'border-slate-400';
+            
+            const scoreClass = avgScore > 20 ? 'text-emerald-600' :
+                              avgScore < -20 ? 'text-rose-600' : 'text-slate-600';
+            
+            const sentimentEmoji = overall === 'positive' ? '📈' :
+                                  overall === 'negative' ? '📉' : '➖';
+            
+            return `
+                <div class="glass-card p-5 rounded-3xl shadow-sm border-b-4 ${borderClass}">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <p class="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">
+                                Sentimiento
+                            </p>
+                            <h3 class="text-xl font-black text-slate-800">${symbol}</h3>
+                        </div>
+                        <span class="text-3xl">${sentimentEmoji}</span>
+                    </div>
+                    
+                    <div class="space-y-2 mb-3">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-slate-600">Score:</span>
+                            <span class="font-bold ${scoreClass}">${avgScore > 0 ? '+' : ''}${avgScore}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-slate-600">Noticias:</span>
+                            <span class="font-bold text-slate-800">${total}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-1">
+                        <div class="flex-1 bg-emerald-500 h-2 rounded-full" style="width: ${posPercent}%"></div>
+                        <div class="flex-1 bg-rose-500 h-2 rounded-full" style="width: ${negPercent}%"></div>
+                    </div>
+                    
+                    <div class="mt-2 flex justify-between text-[10px] font-bold">
+                        <span class="text-emerald-600">${positive} pos</span>
+                        <span class="text-rose-600">${negative} neg</span>
+                    </div>
+                </div>
+            `;
         }
         
         async function refreshPortfolioNews() {

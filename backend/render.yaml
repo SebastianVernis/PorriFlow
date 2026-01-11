@@ -33,6 +33,6 @@ services:
       - key: SENTIMENT_API_PROVIDER
         value: api-ninjas
       - key: SENTIMENT_API_URL
-        value: ""
+        value: https://api.api-ninjas.com/v1
     healthCheckPath: /health
     autoDeploy: true
