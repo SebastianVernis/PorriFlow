@@ -22,5 +22,11 @@ services:
         value: 7d
       - key: ENABLE_BACKGROUND_JOBS
         value: true
+      - key: FINNHUB_API_KEY
+        value: d5fjbopr01qnjhoclpjgd5fjbopr01qnjhoclpk0
+      - key: MARKETSTACK_API_KEY
+        value: 68b8070ec719075f3ea37d9069d4ea68
+      - key: ALPHA_VANTAGE_API_KEY
+        value: CJIOJ9QSU8A2JM7R
     healthCheckPath: /health
     autoDeploy: true
