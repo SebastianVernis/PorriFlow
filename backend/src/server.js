@@ -7,6 +7,7 @@ import portfolioRoutes from './routes/portfolios.js';
 import settingsRoutes from './routes/settings.js';
 import newsRoutes from './routes/news.js';
 import marketDataRoutes from './routes/market-data.js';
+import debugRoutes from './routes/debug.js';
 import { authMiddleware } from './middleware/auth.js';
 import scheduler from './services/background-scheduler.js';
 import newsService from './services/news-service.js';
@@ -36,6 +37,7 @@ app.use('/api/portfolios', authMiddleware, portfolioRoutes);
 app.use('/api/settings', authMiddleware, settingsRoutes);
 app.use('/api/news', authMiddleware, newsRoutes);
 app.use('/api/market-data', authMiddleware, marketDataRoutes);
+app.use('/api/debug', debugRoutes); // Debug routes (no auth for diagnostics)
 
 // Error handling
 app.use((err, req, res, next) => {
