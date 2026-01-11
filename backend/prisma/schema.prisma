@@ -24,6 +24,9 @@ model User {
   portfolios Portfolio[]
   settings   UserSettings?
   newsPreferences UserNewsPreference?
+  mtAccounts MTAccount[]
+  mtPositions MTPosition[]
+  mtOrders   MTOrder[]
   
   @@map("users")
 }
@@ -46,6 +49,8 @@ model UserSettings {
   alphaVantageKey   String?
   blackboxKey       String?
   marketauxKey      String?
+  metaapiToken      String?
+  metaapiEnabled    Boolean @default(false)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -68,6 +73,7 @@ model Portfolio {
   
   // Relations
   positions   Position[]
+  mtPositions MTPosition[]
   
   @@index([userId])
   @@map("portfolios")
@@ -185,4 +191,197 @@ model UserNewsPreference {
   
   @@unique([userId])
   @@map("user_news_preferences")
+}
+
+// ============================================
+// MetaTrader Integration Models
+// ============================================
+
+// MetaTrader Account
+model MTAccount {
+  id                  String   @id @default(cuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // MetaAPI Configuration
+  metaapiAccountId    String   @unique
+  accountName         String
+  accountType         String   // 'cloud', 'self-hosted'
+  platform            String   // 'mt4', 'mt5'
+  broker              String
+  server              String
+  login               String
+  
+  // Account Status
+  status              String   @default("disconnected") // 'connected', 'disconnected', 'error', 'deploying'
+  isActive            Boolean  @default(true)
+  lastSyncAt          DateTime?
+  syncEnabled         Boolean  @default(true)
+  
+  // MetaAPI Token (encrypted)
+  accessToken         String?
+  
+  // Account Info
+  currency            String   @default("USD")
+  leverage            Int?
+  accountBalance      Float?
+  accountEquity       Float?
+  accountMargin       Float?
+  accountFreeMargin   Float?
+  marginLevel         Float?
+  
+  // Sync Settings
+  autoSyncPositions   Boolean  @default(true)
+  autoSyncOrders      Boolean  @default(true)
+  syncInterval        Int      @default(60) // seconds
+  
+  // Metadata
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  // Relations
+  positions           MTPosition[]
+  orders              MTOrder[]
+  syncLogs            MTSyncLog[]
+  
+  @@index([userId])
+  @@index([metaapiAccountId])
+  @@index([status])
+  @@map("mt_accounts")
+}
+
+// MetaTrader Position
+model MTPosition {
+  id                  String   @id @default(cuid())
+  mtAccountId         String
+  mtAccount           MTAccount @relation(fields: [mtAccountId], references: [id], onDelete: Cascade)
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  portfolioId         String?
+  portfolio           Portfolio? @relation(fields: [portfolioId], references: [id], onDelete: SetNull)
+  
+  // Position Identification
+  positionId          String
+  ticket              String
+  
+  // Position Details
+  symbol              String
+  type                String   // 'POSITION_TYPE_BUY', 'POSITION_TYPE_SELL'
+  volume              Float
+  openPrice           Float
+  currentPrice        Float?
+  
+  // P&L
+  profit              Float?
+  swap                Float?
+  commission          Float?
+  
+  // Risk Management
+  stopLoss            Float?
+  takeProfit          Float?
+  
+  // Timestamps
+  openTime            DateTime
+  updateTime          DateTime?
+  
+  // Sync Status
+  isSynced            Boolean  @default(false)
+  lastSyncAt          DateTime?
+  
+  // Metadata
+  comment             String?
+  magicNumber         Int?
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@unique([mtAccountId, positionId])
+  @@index([mtAccountId])
+  @@index([userId])
+  @@index([portfolioId])
+  @@index([symbol])
+  @@index([openTime])
+  @@map("mt_positions")
+}
+
+// MetaTrader Order
+model MTOrder {
+  id                  String   @id @default(cuid())
+  mtAccountId         String
+  mtAccount           MTAccount @relation(fields: [mtAccountId], references: [id], onDelete: Cascade)
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Order Identification
+  orderId             String
+  ticket              String
+  
+  // Order Details
+  symbol              String
+  type                String
+  volume              Float
+  openPrice           Float?
+  closePrice          Float?
+  currentPrice        Float?
+  
+  // Order Status
+  state               String   // 'pending', 'filled', 'cancelled', 'rejected', 'expired'
+  
+  // P&L
+  profit              Float?
+  swap                Float?
+  commission          Float?
+  
+  // Risk Management
+  stopLoss            Float?
+  takeProfit          Float?
+  
+  // Timestamps
+  openTime            DateTime
+  closeTime           DateTime?
+  expirationTime      DateTime?
+  
+  // Metadata
+  comment             String?
+  magicNumber         Int?
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@unique([mtAccountId, orderId])
+  @@index([mtAccountId])
+  @@index([userId])
+  @@index([symbol])
+  @@index([state])
+  @@index([openTime])
+  @@map("mt_orders")
+}
+
+// MetaTrader Sync Log
+model MTSyncLog {
+  id                  String   @id @default(cuid())
+  mtAccountId         String
+  mtAccount           MTAccount @relation(fields: [mtAccountId], references: [id], onDelete: Cascade)
+  
+  // Sync Details
+  syncType            String   // 'positions', 'orders', 'account_info', 'full', 'history'
+  status              String   // 'success', 'error', 'partial'
+  
+  // Results
+  itemsSynced         Int      @default(0)
+  itemsFailed         Int      @default(0)
+  errorMessage        String?
+  errorDetails        String?
+  
+  // Performance
+  durationMs          Int?
+  
+  // Timestamp
+  syncedAt            DateTime @default(now())
+  
+  @@index([mtAccountId])
+  @@index([syncType])
+  @@index([syncedAt])
+  @@index([status])
+  @@map("mt_sync_logs")
 }
