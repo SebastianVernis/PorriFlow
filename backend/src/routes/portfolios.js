@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
             orderBy: { createdAt: 'asc' }
         });
 
-        res.json({ portfolios });
+        res.json(portfolios);
     } catch (error) {
         console.error('Get portfolios error:', error);
         res.status(500).json({ error: 'Failed to fetch portfolios' });
