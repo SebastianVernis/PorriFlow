@@ -37,6 +37,35 @@ function fetchURL(url) {
     });
 }
 
+// Helper specifically for SEC.gov (requires contact info in User-Agent)
+function fetchURLWithSECHeaders(url) {
+    return new Promise((resolve, reject) => {
+        const client = url.startsWith('https') ? https : http;
+        
+        const options = {
+            headers: {
+                // SEC requires User-Agent with company name and contact email
+                'User-Agent': 'SV Portfolio App (contact@svportfolio.com)',
+                'Accept': 'application/atom+xml,application/xml,text/xml,*/*',
+                'Host': 'www.sec.gov'
+            },
+            timeout: 15000
+        };
+        
+        client.get(url, options, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                if (res.statusCode === 200) {
+                    resolve(data);
+                } else {
+                    reject(new Error(`HTTP ${res.statusCode} - ${res.statusMessage || 'SEC request blocked'}`));
+                }
+            });
+        }).on('error', reject);
+    });
+}
+
 /**
  * Fetch news from Yahoo Finance
  */
@@ -167,9 +196,9 @@ async function fetchCryptoNews(symbol) {
 async function fetchSECFilings(symbol) {
     try {
         // SEC EDGAR company filings RSS
-        // First need to get CIK from ticker
+        // SEC requires specific User-Agent with contact info (since 2021)
         const url = `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${symbol}&type=&dateb=&owner=exclude&count=10&output=atom`;
-        const data = await fetchURL(url);
+        const data = await fetchURLWithSECHeaders(url);
         
         // Parse basic XML/Atom feed
         const entries = data.match(/<entry>[\s\S]*?<\/entry>/g) || [];
